@@ -22,5 +22,6 @@ namespace StoreAPI.Models.Contexts
         public DbSet<ProductTypeSaleSumsAndProfitView> ProductTypeSaleSumsAndProfitView { get; set; }
         public DbSet<BrandSaleSumsAndProfitView> BrandSaleSumsAndProfitView { get; set; }
         public DbSet<DayOfWeekSaleSumsView> DayOfWeekSaleSumsView { get; set; }
+        public DbSet<User> User { get; set; }
     }
 }

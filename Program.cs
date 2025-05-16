@@ -30,6 +30,7 @@ builder.Services.AddScoped<CustomerSaleSumsViewService>();
 builder.Services.AddScoped<ProductTypeSaleSumsAndProfitViewService>(); 
 builder.Services.AddScoped<BrandSaleSumsAndProfitViewService>();
 builder.Services.AddScoped<DayOfWeekSaleSumsViewService>();
+builder.Services.AddScoped<UserService>();
 
 //
 // Repositories
@@ -44,6 +45,7 @@ builder.Services.AddScoped<ICustomerSaleSumsViewRepository, CustomerSaleSumsView
 builder.Services.AddScoped<IProductTypeSaleSumsAndProfitViewRepository, ProductTypeSaleSumsAndProfitViewRepository>();
 builder.Services.AddScoped<IBrandSaleSumsAndProfitViewRepository, BrandSaleSumsAndProfitViewRepository>();
 builder.Services.AddScoped<IDayOfWeekSaleSumsViewRepository, DayOfWeekSaleSumsViewRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddCors(options =>//I used this to avoid the CORS errors, also check allow-cross-origin-credentials to true (in extension or in api somehow)
 {
