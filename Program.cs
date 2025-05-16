@@ -1,0 +1,74 @@
+using StoreAPI.Models;
+using StoreAPI.Models.Contexts;
+using StoreAPI.Repositories;
+using StoreAPI.Repositories.Interfaces;
+using StoreAPI.Services;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<StoreContext>(o => o.UseSqlServer(connectionString));
+
+//
+// Services
+//
+builder.Services.AddScoped<DateSaleSumsViewService>();
+builder.Services.AddScoped<DatePurchaseSumsViewService>();
+builder.Services.AddScoped<ProductSaleSumsAndProfitViewService>();
+builder.Services.AddScoped<SupplierPurchaseSumsViewService>(); 
+builder.Services.AddScoped<ProductPurchaseSumsViewService>();
+builder.Services.AddScoped<CitySaleSumsViewService>();
+builder.Services.AddScoped<CustomerSaleSumsViewService>();
+builder.Services.AddScoped<ProductTypeSaleSumsAndProfitViewService>(); 
+builder.Services.AddScoped<BrandSaleSumsAndProfitViewService>();
+builder.Services.AddScoped<DayOfWeekSaleSumsViewService>();
+
+//
+// Repositories
+//
+builder.Services.AddScoped<IDateSaleSumsViewRepository, DateSaleSumsViewRepository>();
+builder.Services.AddScoped<IDatePurchaseSumsViewRepository, DatePurchaseSumsViewRepository>();
+builder.Services.AddScoped<IProductSaleSumsAndProfitViewRepository, ProductSaleSumsAndProfitViewRepository>();
+builder.Services.AddScoped<ISupplierPurchaseSumsViewRepository, SupplierPurchaseSumsViewRepository>();
+builder.Services.AddScoped<IProductPurchaseSumsViewRepository, ProductPurchaseSumsViewRepository>();
+builder.Services.AddScoped<ICitySaleSumsViewRepository, CitySaleSumsViewRepository>();
+builder.Services.AddScoped<ICustomerSaleSumsViewRepository, CustomerSaleSumsViewRepository>();
+builder.Services.AddScoped<IProductTypeSaleSumsAndProfitViewRepository, ProductTypeSaleSumsAndProfitViewRepository>();
+builder.Services.AddScoped<IBrandSaleSumsAndProfitViewRepository, BrandSaleSumsAndProfitViewRepository>();
+builder.Services.AddScoped<IDayOfWeekSaleSumsViewRepository, DayOfWeekSaleSumsViewRepository>();
+
+builder.Services.AddCors(options =>//I used this to avoid the CORS errors, also check allow-cross-origin-credentials to true (in extension or in api somehow)
+{
+    options.AddPolicy("CorsPolicy",
+            builder => builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    //app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
