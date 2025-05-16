@@ -5,6 +5,7 @@ namespace StoreAPI.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        Task<User> GetByUsername(string username);
+        Task<User> GetByUsernameOrEmail(string usernameOrEmail);
+        Task<User> AddUser(User user);
     }
 }

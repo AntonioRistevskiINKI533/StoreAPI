@@ -35,5 +35,21 @@ namespace StoreAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("[action]")]
+        [ProducesResponseType(typeof(ActionResult), 200)]
+        public async Task<ActionResult> AddUser(AddUserRequest request)
+        {
+            try
+            {
+                await _userService.AddUser(request);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ using StoreAPI.Models.Datas;
 using StoreAPI.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Models.Requests;
+using StoreAPI.Models;
 
 namespace StoreAPI.Services
 {
@@ -17,7 +18,7 @@ namespace StoreAPI.Services
 
         public async Task<LoginResponse> Login(LoginRequest request)
         {
-            var user = await _userRepository.GetByUsername(request.Username);
+            var user = await _userRepository.GetByUsernameOrEmail(request.Username);
 
             if (user == null)
             {
@@ -41,6 +42,27 @@ namespace StoreAPI.Services
             {
                 Token = token
             };
+        }
+
+        public async Task AddUser(AddUserRequest request)
+        {
+            var user = await _userRepository.GetByUsernameOrEmail(request.Username);
+
+            if (user != null)
+            {
+                throw new UnauthorizedAccessException("Invalid credentials");
+            }
+
+            user = new User
+            {
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = request.Password,//hash this
+            };
+
+            await _userRepository.AddUser(user);
+
+            return;
         }
     }
 }

@@ -18,9 +18,16 @@ namespace StoreAPI.Repositories
             _context = context;
         }
 
-        public async Task<User> GetByUsername(string username)
+        public async Task<User> GetByUsernameOrEmail(string usernameOrEmail)
         {
-            return await _context.User.Where(x => x.Username == username).FirstOrDefaultAsync();
+            return await _context.User.Where(x => x.Username == usernameOrEmail || x.Email == usernameOrEmail).FirstOrDefaultAsync();
+        }
+
+        public async Task<User> AddUser(User user)
+        {
+            _context.User.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
         }
 
         //public  async Task<Book> Create(Book book)
