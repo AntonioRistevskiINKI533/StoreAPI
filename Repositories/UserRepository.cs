@@ -30,6 +30,25 @@ namespace StoreAPI.Repositories
             return user;
         }
 
+        public async Task<PagedModel<User>> GetAllPaged(int pageIndex, int pageSize)
+        {
+            var items = await _context.User.ToListAsync();
+
+            var totalItems = items.Count;
+
+            items = items.Skip(pageIndex * pageSize)
+                            .Take(pageSize)
+                            .ToList();
+
+            var result = new PagedModel<User>()
+            {
+                TotalItems = totalItems,
+                Items = items,
+            };
+
+            return result;
+        }
+
         //public  async Task<Book> Create(Book book)
         //{
         //    _context.Books.Add(book);

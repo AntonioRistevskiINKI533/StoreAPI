@@ -7,5 +7,6 @@ namespace StoreAPI.Repositories.Interfaces
     {
         Task<User> GetByUsernameOrEmail(string usernameOrEmail);
         Task<User> AddUser(User user);
+        Task<PagedModel<User>> GetAllPaged(int pageIndex, int pageSize);
     }
 }

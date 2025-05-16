@@ -31,11 +31,6 @@ namespace StoreAPI.Services
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
- /*           if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            {
-                throw new UnauthorizedAccessException("Invalid credentials");
-            }*/
-
             // Generate token (placeholder, replace with JWT)
             var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 
@@ -52,6 +47,11 @@ namespace StoreAPI.Services
                 throw new Exception("Invalid email");
             }
 
+            if (request.Password.Length < 8)
+            {
+                throw new Exception("Password must be at least 8 characters long");
+            }
+
             var user = await _userRepository.GetByUsernameOrEmail(request.Username);
 
             if (user != null)
@@ -63,12 +63,32 @@ namespace StoreAPI.Services
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)//hash this
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
             };
 
             await _userRepository.AddUser(user);
 
             return;
+        }
+
+        public async Task<PagedModel<UserData>> GetAllUsersPaged(int pageIndex, int pageSize)
+        {
+            var users = await _userRepository.GetAllPaged(pageIndex, pageSize);
+
+            var userData = users.Items.Select(x => new UserData
+            {
+                Id = x.Id,
+                Username = x.Username,
+                Email = x.Email
+            }).ToList();
+
+            var result = new PagedModel<UserData>()
+            {
+                TotalItems = users.TotalItems,
+                Items = userData
+            };
+
+            return result;
         }
     }
 }

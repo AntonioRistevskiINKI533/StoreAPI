@@ -32,7 +32,7 @@ namespace StoreAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Unauthorized(ex.Message);
             }
         }
 
@@ -49,6 +49,22 @@ namespace StoreAPI.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("[action]")]
+        [ProducesResponseType(typeof(ActionResult<PagedModel<UserData>>), 200)]//this could also be different
+        public async Task<ActionResult<PagedModel<UserData>>> GetAllUsersPaged(int pageIndex, int pageSize)
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersPaged(pageIndex, pageSize);
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
     }
