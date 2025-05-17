@@ -31,6 +31,7 @@ builder.Services.AddScoped<ProductTypeSaleSumsAndProfitViewService>();
 builder.Services.AddScoped<BrandSaleSumsAndProfitViewService>();
 builder.Services.AddScoped<DayOfWeekSaleSumsViewService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddSingleton<TokenService>();
 
 //
 // Repositories

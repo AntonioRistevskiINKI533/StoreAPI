@@ -31,8 +31,8 @@ namespace StoreAPI.Services
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            // Generate token (placeholder, replace with JWT)
-            var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            var service = new TokenService();
+            var token = service.GenerateToken(user.Username, user.Email);
 
             return new LoginResponse
             {
