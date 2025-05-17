@@ -3,6 +3,7 @@ using StoreAPI.Models;
 using StoreAPI.Models.Datas;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Models.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StoreAPI.Controllers
 {
@@ -36,6 +37,7 @@ namespace StoreAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> AddUser(AddUserRequest request)
@@ -52,6 +54,7 @@ namespace StoreAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         [ProducesResponseType(typeof(ActionResult<PagedModel<UserData>>), 200)]//this could also be different
         public async Task<ActionResult<PagedModel<UserData>>> GetAllUsersPaged(int pageIndex, int pageSize)
@@ -68,6 +71,7 @@ namespace StoreAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> RemoveUser(int userId)
