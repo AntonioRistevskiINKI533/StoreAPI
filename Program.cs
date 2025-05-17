@@ -18,12 +18,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // fo
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "StoreApp",
+            ValidIssuer = builder.Configuration.GetValue<string>("Authentication:Issuer"),
             ValidateAudience = true,
-            ValidAudience = "StoreAppUsers",
+            ValidAudience = builder.Configuration.GetValue<string>("Authentication:Audience"),
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecretkey12345mysupersecretkey12345")) //TODO put in appsettings
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("Authentication:SecretKey")))
         };
     });
 
