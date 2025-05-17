@@ -33,11 +33,28 @@ namespace StoreAPI.Services
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            var token = _tokenService.GenerateToken(user.Username, user.Email);
+            var token = _tokenService.GenerateToken(user.Id);
 
             return new LoginResponse
             {
                 Token = token
+            };
+        }
+
+        public async Task<GetUserProfileResponse> GetUserProfile(int userId)
+        {
+            var user = await _userRepository.GetById(userId);
+
+            if (user == null)
+            {
+                throw new Exception("User does not exist");
+            }
+
+            return new GetUserProfileResponse
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
             };
         }
 

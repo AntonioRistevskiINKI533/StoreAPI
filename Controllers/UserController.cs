@@ -1,9 +1,9 @@
 using StoreAPI.Services;
-using StoreAPI.Models;
 using StoreAPI.Models.Datas;
 using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace StoreAPI.Controllers
 {
@@ -28,6 +28,32 @@ namespace StoreAPI.Controllers
             try
             {
                 var result = await _userService.Login(request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("[action]")]
+        [ProducesResponseType(typeof(ActionResult<GetUserProfileResponse>), 200)]
+        public async Task<ActionResult<GetUserProfileResponse>> GetUserProfile()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (userIdClaim == null)
+                {
+                    return Unauthorized("User Id claim not found");
+                }
+
+                int userId = int.Parse(userIdClaim.Value);
+
+                var result = await _userService.GetUserProfile(userId);
 
                 return Ok(result);
             }

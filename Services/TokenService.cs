@@ -17,12 +17,13 @@ namespace StoreAPI.Services
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authentication:Secretkey")));
         }
 
-        public string GenerateToken(string username, string email)
+        public string GenerateToken(int userId)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                //new Claim(JwtRegisteredClaimNames.Sub, username),
+                //new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // stands for "JWT ID", and it's a unique identifier for each token. Helps prevent token replay attacks
             };
 
