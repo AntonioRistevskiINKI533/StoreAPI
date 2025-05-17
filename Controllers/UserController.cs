@@ -67,5 +67,21 @@ namespace StoreAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost("[action]")]
+        [ProducesResponseType(typeof(ActionResult), 200)]
+        public async Task<ActionResult> RemoveUser(int userId)
+        {
+            try
+            {
+                await _userService.RemoveUser(userId);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
     }
 }

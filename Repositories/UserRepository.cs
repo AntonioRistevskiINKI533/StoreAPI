@@ -23,7 +23,7 @@ namespace StoreAPI.Repositories
             return await _context.User.Where(x => x.Username == usernameOrEmail || x.Email == usernameOrEmail).FirstOrDefaultAsync();
         }
 
-        public async Task<User> AddUser(User user)
+        public async Task<User> Add(User user)
         {
             _context.User.Add(user);
             await _context.SaveChangesAsync();
@@ -47,6 +47,17 @@ namespace StoreAPI.Repositories
             };
 
             return result;
+        }
+
+        public async Task<User> GetById(int id)
+        {
+            return await _context.User.Where(x => x.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task Remove(User user)
+        {
+           _context.User.Remove(user);
+            await _context.SaveChangesAsync();
         }
 
         //public  async Task<Book> Create(Book book)

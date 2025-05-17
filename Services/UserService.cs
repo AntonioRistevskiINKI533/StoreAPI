@@ -66,7 +66,7 @@ namespace StoreAPI.Services
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
             };
 
-            await _userRepository.AddUser(user);
+            await _userRepository.Add(user);
 
             return;
         }
@@ -89,6 +89,20 @@ namespace StoreAPI.Services
             };
 
             return result;
+        }
+
+        public async Task RemoveUser(int userId)
+        {
+            var user = await _userRepository.GetById(userId);
+
+            if (user == null)
+            {
+                throw new Exception("User does not exist");
+            }
+
+            await _userRepository.Remove(user);
+
+            return;
         }
     }
 }
