@@ -11,10 +11,12 @@ namespace StoreAPI.Services
     public class UserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly TokenService _tokenService;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, TokenService tokenService)
         {
             _userRepository = userRepository;
+            _tokenService = tokenService;
         }
 
         public async Task<LoginResponse> Login(LoginRequest request)
@@ -31,8 +33,7 @@ namespace StoreAPI.Services
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            var service = new TokenService();
-            var token = service.GenerateToken(user.Username, user.Email);
+            var token = _tokenService.GenerateToken(user.Username, user.Email);
 
             return new LoginResponse
             {

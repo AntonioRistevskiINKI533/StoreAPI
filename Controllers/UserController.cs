@@ -74,7 +74,7 @@ namespace StoreAPI.Controllers
         [Authorize]
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
-        public async Task<ActionResult> RemoveUser(int userId)
+        public async Task<ActionResult> RemoveUser(int userId) //TODO maybe only super admin user should have this access
         {
             try
             {

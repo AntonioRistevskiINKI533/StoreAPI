@@ -8,12 +8,13 @@ namespace StoreAPI.Services
 {
     public class TokenService
     {
-        private const string SecretKey = "mysupersecretkey12345mysupersecretkey12345"; // Minimum 16 characters // nope it had to be 32 otherwise it threw an error, TODO add better value
         private readonly SymmetricSecurityKey _key;
+        private readonly IConfiguration _configuration;
 
-        public TokenService()
+        public TokenService(IConfiguration configuration)
         {
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
+            _configuration = configuration;
+            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authentication:Secretkey")));
         }
 
         public string GenerateToken(string username, string email)
@@ -28,8 +29,8 @@ namespace StoreAPI.Services
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "StoreApp",
-                audience: "StoreAppUsers",
+                issuer: _configuration.GetValue<string>("Authentication:Issuer"),
+                audience: _configuration.GetValue<string>("Authentication:Audience"),
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(72),
                 signingCredentials: creds
@@ -48,7 +49,7 @@ namespace StoreAPI.Services
                 ValidateAudience = true,
                 ValidAudience = "StoreAppUsers",
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authentication:Secretkey"))),
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
