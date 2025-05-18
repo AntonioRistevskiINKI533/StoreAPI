@@ -71,7 +71,15 @@ namespace StoreAPI.Services
 
             if (existingUser != null && existingUser.Id != user.Id)
             {
-                throw new Exception("User with same email or username already exists");
+                if (existingUser.Username == request.Username)
+                {
+                    throw new Exception("User with same username already exists");
+                }
+
+                if (existingUser.Email == request.Email)
+                {
+                    throw new Exception("User with same email already exists");
+                }
             }
 
             user.Username = request.Username;
@@ -116,7 +124,15 @@ namespace StoreAPI.Services
 
             if (existingUser != null && existingUser.Id != user.Id)
             {
-                throw new Exception("User with same email or username already exists");
+                if (existingUser.Username == request.Username)
+                {
+                    throw new Exception("User with same username already exists");
+                }
+
+                if (existingUser.Email == request.Email)
+                {
+                    throw new Exception("User with same email already exists");
+                }
             }
 
             user.Username = request.Username;
