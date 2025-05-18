@@ -57,10 +57,10 @@ namespace StoreAPI.Services
                 throw new Exception("Company does not exist");
             }
 
-            var existingCompany = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone);
+            var existingCompany = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone, request.Id);
 
             //fix everywhere it finds with same id
-            if (existingCompany != null && existingCompany.Id != company.Id)
+            if (existingCompany != null)
             {
                 if (existingCompany.Address == request.Address)
                 {

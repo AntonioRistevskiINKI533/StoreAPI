@@ -18,9 +18,9 @@ namespace StoreAPI.Repositories
             _context = context;
         }
 
-        public async Task<Company> GetByAddressOrPhone(string address, string phone)
+        public async Task<Company> GetByAddressOrPhone(string address, string phone, int? companyId = null)
         {
-            return await _context.Company.Where(x => x.Address == address || x.Phone == phone).FirstOrDefaultAsync();
+            return await _context.Company.Where(x => (x.Address == address || x.Phone == phone) && x.Id != companyId).FirstOrDefaultAsync();
         }
 
         public async Task<Company> Add(Company company)

@@ -5,7 +5,7 @@ namespace StoreAPI.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        Task<User> GetByUsernameOrEmail(string username, string email);
+        Task<User> GetByUsernameOrEmail(string username, string email, int? userId = null);
         Task<User> Add(User user);
         Task<User> Update(User user);
         Task<PagedModel<User>> GetAllPaged(int pageIndex, int pageSize);

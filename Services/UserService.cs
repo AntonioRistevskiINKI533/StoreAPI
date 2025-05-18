@@ -73,9 +73,9 @@ namespace StoreAPI.Services
                 throw new Exception("User does not exist");
             }
 
-            var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email);
+            var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email, user.Id);
 
-            if (existingUser != null && existingUser.Id != user.Id)
+            if (existingUser != null)
             {
                 if (existingUser.Username == request.Username)
                 {
@@ -139,9 +139,9 @@ namespace StoreAPI.Services
                 throw new Exception("User does not exist");
             }
 
-            var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email);
+            var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email, user.Id);
 
-            if (existingUser != null && existingUser.Id != user.Id)
+            if (existingUser != null)
             {
                 if (existingUser.Username == request.Username)
                 {
