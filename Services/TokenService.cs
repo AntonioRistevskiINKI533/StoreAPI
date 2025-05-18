@@ -17,14 +17,15 @@ namespace StoreAPI.Services
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Authentication:Secretkey")));
         }
 
-        public string GenerateToken(int userId)
+        public string GenerateToken(int userId, string roleName)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()), // ASP.NET Core maps sub (JWT standard) to ClaimTypes.NameIdentifier by default.
                 //new Claim(JwtRegisteredClaimNames.Sub, username),
                 //new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // stands for "JWT ID", and it's a unique identifier for each token. Helps prevent token replay attacks
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // stands for "JWT ID", and it's a unique identifier for each token. Helps prevent token replay attacks
+                new Claim(ClaimTypes.Role, roleName)
             };
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);

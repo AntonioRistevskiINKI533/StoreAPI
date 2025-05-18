@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Models.Requests;
 using StoreAPI.Models;
 using BCrypt.Net;
+using StoreAPI.Enums;
 
 namespace StoreAPI.Services
 {
@@ -33,7 +34,9 @@ namespace StoreAPI.Services
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            var token = _tokenService.GenerateToken(user.Id);
+            var a = ((RoleEnum)user.RoleId).ToString();
+
+            var token = _tokenService.GenerateToken(user.Id, a);
 
             return new LoginResponse
             {

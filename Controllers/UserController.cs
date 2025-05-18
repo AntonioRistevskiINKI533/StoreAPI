@@ -89,7 +89,7 @@ namespace StoreAPI.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> AddUser(AddUserRequest request)
@@ -106,7 +106,7 @@ namespace StoreAPI.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> UpdateUser(UpdateUserRequest request)
@@ -140,7 +140,7 @@ namespace StoreAPI.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> RemoveUser(int userId) //TODO maybe only super admin user should have this access, or adding other users
