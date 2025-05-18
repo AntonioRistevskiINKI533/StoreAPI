@@ -21,7 +21,7 @@ namespace StoreAPI.Services
 
         public async Task<LoginResponse> Login(LoginRequest request)
         {
-            var user = await _userRepository.GetByUsernameOrEmail(request.Username, request.Username);//TODO fix
+            var user = await _userRepository.GetByUsernameOrEmail(request.Username, null);// login only possible with username
 
             if (user == null)
             {
@@ -60,16 +60,6 @@ namespace StoreAPI.Services
 
         public async Task UpdateUserProfile(UpdateUserProfileRequest request, int userId)
         {
-            if (request.Email.Contains('@') == false)
-            {
-                throw new Exception("Invalid email");
-            }
-
-            if (request.Username.Length > 20 || request.Username.Length < 5)
-            {
-                throw new Exception("Username must be between 5 to 20 characters long");
-            }
-
             var user = await _userRepository.GetById(userId);
 
             if (user == null)
@@ -77,7 +67,12 @@ namespace StoreAPI.Services
                 throw new Exception("User does not exist");
             }
 
-            //add validation for unique
+            var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email);
+
+            if (existingUser != null && existingUser.Id != user.Id)
+            {
+                throw new Exception("User with same email or username already exists");
+            }
 
             user.Username = request.Username;
             user.Email = request.Email;
@@ -89,21 +84,6 @@ namespace StoreAPI.Services
 
         public async Task AddUser(AddUserRequest request)
         {
-            if (request.Email.Contains('@') == false)
-            {
-                throw new Exception("Invalid email");
-            }
-
-            if (request.Username.Length > 20 || request.Username.Length < 5)
-            {
-                throw new Exception("Username must be between 5 to 20 characters long");
-            }
-
-            if (request.Password.Length < 8)
-            {
-                throw new Exception("Password must be at least 8 characters long");
-            }
-
             var user = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email);
 
             if (user != null)
@@ -125,16 +105,6 @@ namespace StoreAPI.Services
 
         public async Task UpdateUser(UpdateUserRequest request)
         {
-            if (request.Email.Contains('@') == false)
-            {
-                throw new Exception("Invalid email");
-            }
-
-            if (request.Username.Length > 20 || request.Username.Length < 5)
-            {
-                throw new Exception("Username must be between 5 to 20 characters long");
-            }
-
             var user = await _userRepository.GetById(request.Id);
 
             if (user == null)
@@ -142,7 +112,12 @@ namespace StoreAPI.Services
                 throw new Exception("User does not exist");
             }
 
-            //add validation for unique
+            var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email);
+
+            if (existingUser != null && existingUser.Id != user.Id)
+            {
+                throw new Exception("User with same email or username already exists");
+            }
 
             user.Username = request.Username;
             user.Email = request.Email;

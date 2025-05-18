@@ -9,7 +9,10 @@ namespace StoreAPI.Models.Requests
 {
     public class UpdateUserProfileRequest
     {
+        [StringLength(20, MinimumLength = 5, ErrorMessage = "Username must be between 5 and 20 characters.")]
         public string Username { get; set; }
+
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; }
     }
 }
