@@ -55,6 +55,9 @@ namespace StoreAPI.Services
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
+                Name = user.Name,
+                Surname = user.Surname,
+                RoleId = user.RoleId,
             };
         }
 
@@ -84,6 +87,8 @@ namespace StoreAPI.Services
 
             user.Username = request.Username;
             user.Email = request.Email;
+            user.Name = request.Name;
+            user.Surname = request.Surname;
 
             await _userRepository.Update(user);
 
@@ -103,7 +108,10 @@ namespace StoreAPI.Services
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Name = request.Name,
+                Surname = request.Surname,
+                RoleId = request.RoleId
             };
 
             await _userRepository.Add(user);
@@ -137,6 +145,8 @@ namespace StoreAPI.Services
 
             user.Username = request.Username;
             user.Email = request.Email;
+            user.Name = request.Name;
+            user.Surname = request.Surname;
 
             await _userRepository.Update(user);
 
@@ -151,7 +161,10 @@ namespace StoreAPI.Services
             {
                 Id = x.Id,
                 Username = x.Username,
-                Email = x.Email
+                Email = x.Email,
+                Name = x.Name,
+                Surname = x.Surname,
+                RoleId = x.RoleId,
             }).ToList();
 
             var result = new PagedModel<UserData>()

@@ -9,10 +9,23 @@ namespace StoreAPI.Models.Requests
 {
     public class UpdateUserRequest
     {
+        [Required]
         public int Id { get; set; }
-        [StringLength(20, MinimumLength = 5, ErrorMessage = "Username must be between 5 and 20 characters.")]
+
+        [Required]
+        [StringLength(20, MinimumLength = 5, ErrorMessage = "Username must be between 5 and 20 characters")]
         public string Username { get; set; }
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
+
+        [Required]
+        [EmailAddress(ErrorMessage = "Invalid email")]
         public string Email { get; set; }
+
+        [Required]
+        [StringLength(100, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 100 characters")]
+        public string Name { get; set; }
+
+        [Required]
+        [StringLength(100, MinimumLength = 1, ErrorMessage = "Surname must be between 1 and 100 characters")]
+        public string Surname { get; set; }
     }
 }
