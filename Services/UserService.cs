@@ -156,6 +156,26 @@ namespace StoreAPI.Services
             return;
         }
 
+        public async Task<UserData> GetUser(int userId)
+        {
+            var user = await _userRepository.GetById(userId);
+
+            if (user == null)
+            {
+                throw new Exception("User does not exist");
+            }
+
+            return new UserData
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Name = user.Name,
+                Surname = user.Surname,
+                RoleId = user.RoleId,
+            };
+        }
+
         public async Task<PagedModel<UserData>> GetAllUsersPaged(int pageIndex, int pageSize)
         {
             var users = await _userRepository.GetAllPaged(pageIndex, pageSize);

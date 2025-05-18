@@ -123,6 +123,22 @@ namespace StoreAPI.Controllers
             }
         }
 
+        [HttpGet("[action]")]
+        [ProducesResponseType(typeof(ActionResult<UserData>), 200)]
+        public async Task<ActionResult<UserData>> GetUser(int userId)
+        {
+            try
+            {
+                var users = await _userService.GetUser(userId);
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
         [Authorize]
         [HttpGet("[action]")]
         [ProducesResponseType(typeof(ActionResult<PagedModel<UserData>>), 200)]//this could also be different
