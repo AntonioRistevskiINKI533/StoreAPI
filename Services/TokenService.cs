@@ -21,7 +21,7 @@ namespace StoreAPI.Services
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()), // ASP.NET Core maps sub (JWT standard) to ClaimTypes.NameIdentifier by default.
                 //new Claim(JwtRegisteredClaimNames.Sub, username),
                 //new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // stands for "JWT ID", and it's a unique identifier for each token. Helps prevent token replay attacks

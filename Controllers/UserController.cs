@@ -44,7 +44,7 @@ namespace StoreAPI.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ASP.NET Core maps sub (JWT standard) to ClaimTypes.NameIdentifier by default.
 
                 if (userIdClaim == null)
                 {
@@ -64,6 +64,32 @@ namespace StoreAPI.Controllers
         }
 
         [Authorize]
+        [HttpPut("[action]")]
+        [ProducesResponseType(typeof(ActionResult), 200)]
+        public async Task<ActionResult> UpdateUserProfile(UpdateUserProfileRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ASP.NET Core maps sub (JWT standard) to ClaimTypes.NameIdentifier by default.
+
+                if (userIdClaim == null)
+                {
+                    return Unauthorized("User Id claim not found");
+                }
+
+                int userId = int.Parse(userIdClaim.Value);
+
+                await _userService.UpdateUserProfile(request, userId);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> AddUser(AddUserRequest request)
@@ -71,6 +97,23 @@ namespace StoreAPI.Controllers
             try
             {
                 await _userService.AddUser(request);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("[action]")]
+        [ProducesResponseType(typeof(ActionResult), 200)]
+        public async Task<ActionResult> UpdateUser(UpdateUserRequest request)
+        {
+            try
+            {
+                await _userService.UpdateUser(request);
 
                 return Ok();
             }
@@ -98,7 +141,7 @@ namespace StoreAPI.Controllers
         }
 
         [Authorize]
-        [HttpPost("[action]")]
+        [HttpDelete("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> RemoveUser(int userId) //TODO maybe only super admin user should have this access
         {
