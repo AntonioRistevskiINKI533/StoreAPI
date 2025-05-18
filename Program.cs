@@ -40,16 +40,6 @@ builder.Services.AddDbContext<StoreContext>(o => o.UseSqlServer(connectionString
 //
 // Services
 //
-builder.Services.AddScoped<DateSaleSumsViewService>();
-builder.Services.AddScoped<DatePurchaseSumsViewService>();
-builder.Services.AddScoped<ProductSaleSumsAndProfitViewService>();
-builder.Services.AddScoped<SupplierPurchaseSumsViewService>(); 
-builder.Services.AddScoped<ProductPurchaseSumsViewService>();
-builder.Services.AddScoped<CitySaleSumsViewService>();
-builder.Services.AddScoped<CustomerSaleSumsViewService>();
-builder.Services.AddScoped<ProductTypeSaleSumsAndProfitViewService>(); 
-builder.Services.AddScoped<BrandSaleSumsAndProfitViewService>();
-builder.Services.AddScoped<DayOfWeekSaleSumsViewService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddSingleton<TokenService>();
@@ -57,16 +47,6 @@ builder.Services.AddSingleton<TokenService>();
 //
 // Repositories
 //
-builder.Services.AddScoped<IDateSaleSumsViewRepository, DateSaleSumsViewRepository>();
-builder.Services.AddScoped<IDatePurchaseSumsViewRepository, DatePurchaseSumsViewRepository>();
-builder.Services.AddScoped<IProductSaleSumsAndProfitViewRepository, ProductSaleSumsAndProfitViewRepository>();
-builder.Services.AddScoped<ISupplierPurchaseSumsViewRepository, SupplierPurchaseSumsViewRepository>();
-builder.Services.AddScoped<IProductPurchaseSumsViewRepository, ProductPurchaseSumsViewRepository>();
-builder.Services.AddScoped<ICitySaleSumsViewRepository, CitySaleSumsViewRepository>();
-builder.Services.AddScoped<ICustomerSaleSumsViewRepository, CustomerSaleSumsViewRepository>();
-builder.Services.AddScoped<IProductTypeSaleSumsAndProfitViewRepository, ProductTypeSaleSumsAndProfitViewRepository>();
-builder.Services.AddScoped<IBrandSaleSumsAndProfitViewRepository, BrandSaleSumsAndProfitViewRepository>();
-builder.Services.AddScoped<IDayOfWeekSaleSumsViewRepository, DayOfWeekSaleSumsViewRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
