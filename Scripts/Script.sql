@@ -31,3 +31,12 @@ CREATE TABLE [Company] (
     [Address] NVARCHAR(200) NOT NULL UNIQUE,
     Phone NVARCHAR(18) NOT NULL UNIQUE,
 );
+
+CREATE TABLE [Product] (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    RegistrationNumber NVARCHAR(7) NOT NULL UNIQUE,
+    [Name] NVARCHAR(500) NOT NULL UNIQUE,
+    CompanyId INT NOT NULL,
+    Price DECIMAL(18, 2) NOT NULL,
+    FOREIGN KEY (CompanyId) REFERENCES [Company](Id)
+);

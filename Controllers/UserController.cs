@@ -129,9 +129,9 @@ namespace StoreAPI.Controllers
         {
             try
             {
-                var users = await _userService.GetUser(userId);
+                var user = await _userService.GetUser(userId);
 
-                return Ok(users);
+                return Ok(user);
             }
             catch (Exception ex)
             {

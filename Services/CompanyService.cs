@@ -12,10 +12,12 @@ namespace StoreAPI.Services
     public class CompanyService
     {
         private readonly ICompanyRepository _companyRepository;
+        private readonly IProductRepository _productRepository;
 
-        public CompanyService(ICompanyRepository companyRepository)
+        public CompanyService(ICompanyRepository companyRepository, IProductRepository productRepository)
         {
             _companyRepository = companyRepository;
+            _productRepository = productRepository;
         }
 
         public async Task AddCompany(AddCompanyRequest request)
@@ -57,6 +59,7 @@ namespace StoreAPI.Services
 
             var existingCompany = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone);
 
+            //fix everywhere it finds with same id
             if (existingCompany != null && existingCompany.Id != company.Id)
             {
                 if (existingCompany.Address == request.Address)
@@ -122,6 +125,13 @@ namespace StoreAPI.Services
             if (company == null)
             {
                 throw new Exception("Company does not exist");
+            }
+
+            var products = await _productRepository.GetByCompanyId(companyId);
+
+            if (products != null)
+            {
+                throw new Exception("Company has products, please delete them first");
             }
 
             await _companyRepository.Remove(company);

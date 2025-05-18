@@ -10,6 +10,6 @@ namespace StoreAPI.Repositories.Interfaces
         Task<Company> Update(Company company);
         Task<PagedModel<Company>> GetAllPaged(int pageIndex, int pageSize);
         Task<Company> GetById(int id);
-        Task Remove(Company uscompanyer);
+        Task Remove(Company company);
     }
 }
