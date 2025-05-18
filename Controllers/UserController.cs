@@ -39,8 +39,8 @@ namespace StoreAPI.Controllers
 
         [Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<GetUserProfileResponse>), 200)]
-        public async Task<ActionResult<GetUserProfileResponse>> GetUserProfile()
+        [ProducesResponseType(typeof(ActionResult<UserData>), 200)]
+        public async Task<ActionResult<UserData>> GetUserProfile()
         {
             try
             {

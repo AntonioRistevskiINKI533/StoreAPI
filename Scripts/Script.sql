@@ -25,3 +25,9 @@ VALUES (
     'Ristevski',
     1
 );
+
+CREATE TABLE [Company] (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    [Address] NVARCHAR(200) NOT NULL UNIQUE,
+    Phone NVARCHAR(18) NOT NULL UNIQUE,
+);

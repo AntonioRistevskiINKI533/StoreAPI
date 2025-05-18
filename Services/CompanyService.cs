@@ -1,0 +1,132 @@
+﻿using StoreAPI.Repositories;
+using StoreAPI.Models.Datas;
+using StoreAPI.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using StoreAPI.Models.Requests;
+using StoreAPI.Models;
+using BCrypt.Net;
+using StoreAPI.Enums;
+
+namespace StoreAPI.Services
+{
+    public class CompanyService
+    {
+        private readonly ICompanyRepository _companyRepository;
+
+        public CompanyService(ICompanyRepository companyRepository)
+        {
+            _companyRepository = companyRepository;
+        }
+
+        public async Task AddCompany(AddCompanyRequest request)
+        {
+            var company = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone);
+
+            if (company != null)
+            {
+                if (company.Address == request.Address)
+                {
+                    throw new Exception("Company with same address already exists");
+                }
+
+                if (company.Phone == request.Phone)
+                {
+                    throw new Exception("Company with same phone already exists");
+                }
+            }
+
+            company = new Company
+            {
+                Address = request.Address,
+                Phone = request.Phone
+            };
+
+            await _companyRepository.Add(company);
+
+            return;
+        }
+
+        public async Task UpdateCompany(UpdateCompanyRequest request)
+        {
+            var company = await _companyRepository.GetById(request.Id);
+
+            if (company == null)
+            {
+                throw new Exception("Company does not exist");
+            }
+
+            var existingCompany = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone);
+
+            if (existingCompany != null && existingCompany.Id != company.Id)
+            {
+                if (existingCompany.Address == request.Address)
+                {
+                    throw new Exception("Company with same address already exists");
+                }
+
+                if (existingCompany.Phone == request.Phone)
+                {
+                    throw new Exception("Company with same phone already exists");
+                }
+            }
+
+            company.Address = request.Address;
+            company.Phone = request.Phone;
+
+            await _companyRepository.Update(company);
+
+            return;
+        }
+
+        public async Task<CompanyData> GetCompany(int companyId)
+        {
+            var company = await _companyRepository.GetById(companyId);
+
+            if (company == null)
+            {
+                throw new Exception("Company does not exist");
+            }
+
+            return new CompanyData
+            {
+                Id = company.Id,
+                Address = company.Address,
+                Phone = company.Phone
+            };
+        }
+
+        public async Task<PagedModel<CompanyData>> GetAllCompaniesPaged(int pageIndex, int pageSize)
+        {
+            var companies = await _companyRepository.GetAllPaged(pageIndex, pageSize);
+
+            var companyData = companies.Items.Select(x => new CompanyData
+            {
+                Id = x.Id,
+                Address = x.Address,
+                Phone = x.Phone
+            }).ToList();
+
+            var result = new PagedModel<CompanyData>()
+            {
+                TotalItems = companies.TotalItems,
+                Items = companyData
+            };
+
+            return result;
+        }
+
+        public async Task RemoveCompany(int companyId)
+        {
+            var company = await _companyRepository.GetById(companyId);
+
+            if (company == null)
+            {
+                throw new Exception("Company does not exist");
+            }
+
+            await _companyRepository.Remove(company);
+
+            return;
+        }
+    }
+}

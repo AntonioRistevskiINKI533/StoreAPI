@@ -44,7 +44,7 @@ namespace StoreAPI.Services
             };
         }
 
-        public async Task<GetUserProfileResponse> GetUserProfile(int userId)
+        public async Task<UserData> GetUserProfile(int userId)
         {
             var user = await _userRepository.GetById(userId);
 
@@ -53,7 +53,7 @@ namespace StoreAPI.Services
                 throw new Exception("User does not exist");
             }
 
-            return new GetUserProfileResponse
+            return new UserData
             {
                 Id = user.Id,
                 Username = user.Username,
@@ -104,7 +104,15 @@ namespace StoreAPI.Services
 
             if (user != null)
             {
-                throw new Exception("User with same email or username already exists");
+                if (user.Username == request.Username)
+                {
+                    throw new Exception("User with same username already exists");
+                }
+
+                if (user.Email == request.Email)
+                {
+                    throw new Exception("User with same email already exists");
+                }
             }
 
             user = new User

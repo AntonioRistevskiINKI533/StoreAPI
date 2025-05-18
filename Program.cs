@@ -42,6 +42,7 @@ builder.Services.AddDbContext<StoreContext>(o => o.UseSqlServer(connectionString
 //
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<CompanyService>();
 builder.Services.AddSingleton<TokenService>();
 
 //
@@ -49,6 +50,7 @@ builder.Services.AddSingleton<TokenService>();
 //
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 
 builder.Services.AddCors(options =>//I used this to avoid the CORS errors, also check allow-cross-origin-credentials to true (in extension or in api somehow)
 {
