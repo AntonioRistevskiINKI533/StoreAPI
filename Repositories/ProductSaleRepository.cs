@@ -32,9 +32,12 @@ namespace StoreAPI.Repositories
             return productSale;
         }
 
-        public async Task<PagedModel<ProductSale>> GetAllPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<ProductSale>> GetAllPaged(int pageIndex, int pageSize, DateTime? dateFrom, DateTime? dateTo, int? productId)
         {
-            var items = await _context.ProductSale.ToListAsync();
+            var items = await _context.ProductSale.Where(x => 
+                (x.ProductId == productId || productId == null) &&
+                (x.Date >= dateFrom || dateFrom == null) &&
+                (x.Date <= dateTo || dateTo == null)).ToListAsync();
 
             var totalItems = items.Count;
 
