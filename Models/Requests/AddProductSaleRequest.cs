@@ -7,17 +7,18 @@ using System.Threading.Tasks;
 
 namespace StoreAPI.Models.Requests
 {
-    public class AddProductRequest
+    public class AddProductSaleRequest
     {
         [Required]
-        [StringLength(500, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 500 characters")]
-        public string Name { get; set; }
+        public int ProductId { get; set; }
 
         [Required]
-        public int CompanyId { get; set; }
+        [Range(1, double.MaxValue, ErrorMessage = "Sold amount must be greater than 0")]
+        public int SoldAmount { get; set; }
 
-        [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
-        public decimal Price { get; set; }
+        public decimal? PricePerUnit { get; set; }
+
+        public DateTime? Date { get; set; }
     }
 }

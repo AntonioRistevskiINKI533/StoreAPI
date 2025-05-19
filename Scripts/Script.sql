@@ -40,3 +40,12 @@ CREATE TABLE [Product] (
     Price DECIMAL(18, 2) NOT NULL,
     FOREIGN KEY (CompanyId) REFERENCES [Company](Id)
 );
+
+CREATE TABLE [ProductSale] (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    ProductId INT NOT NULL,
+	SoldAmount INT NOT NULL,
+	PricePerUnit DECIMAL(18, 2) NOT NULL,
+	[Date] DATETIME NOT NULL,
+    FOREIGN KEY (ProductId) REFERENCES [Product](Id)
+);

@@ -17,5 +17,6 @@ namespace StoreAPI.Models.Contexts
         public DbSet<Role> Role { get; set; }
         public DbSet<Company> Company { get; set; }
         public DbSet<Product> Product { get; set; }
+        public DbSet<ProductSale> ProductSale { get; set; }
     }
 }

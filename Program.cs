@@ -44,6 +44,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<CompanyService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductSaleService>();
 builder.Services.AddSingleton<TokenService>();
 
 //
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductSaleRepository, ProductSaleRepository>();
 
 builder.Services.AddCors(options =>//I used this to avoid the CORS errors, also check allow-cross-origin-credentials to true (in extension or in api somehow)
 {
