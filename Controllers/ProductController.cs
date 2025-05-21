@@ -72,12 +72,12 @@ namespace StoreAPI.Controllers
 
         [Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<PagedModel<ProductData>>), 200)]//TODO Add filters ??
-        public async Task<ActionResult<PagedModel<ProductData>>> GetAllProductsPaged(int pageIndex, int pageSize)
+        [ProducesResponseType(typeof(ActionResult<PagedModel<ProductData>>), 200)]//TODO Add filters ??, return CompanyName and in GetAllProductSales return productName
+        public async Task<ActionResult<PagedModel<ProductData>>> GetAllProductsPaged(int pageIndex, int pageSize, int? companyId)
         {
             try
             {
-                var products = await _productService.GetAllProductsPaged(pageIndex, pageSize);
+                var products = await _productService.GetAllProductsPaged(pageIndex, pageSize, companyId);
 
                 return Ok(products);
             }

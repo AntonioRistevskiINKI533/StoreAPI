@@ -97,7 +97,8 @@ namespace StoreAPI.Services
                 ProductId = x.ProductId,
                 SoldAmount = x.SoldAmount,
                 PricePerUnit = x.PricePerUnit,
-                Date = x.Date
+                Date = x.Date,
+                ProductName = x.ProductName,
             }).ToList();
 
             var result = new PagedModel<ProductSaleData>()

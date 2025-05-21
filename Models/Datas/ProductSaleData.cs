@@ -13,5 +13,6 @@ namespace StoreAPI.Models.Datas
         public int SoldAmount { get; set; }
         public decimal PricePerUnit { get; set; }
         public DateTime Date { get; set; }
+        public string? ProductName { get; set; }
     }
 }

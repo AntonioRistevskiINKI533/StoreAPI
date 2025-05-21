@@ -13,5 +13,6 @@ namespace StoreAPI.Models.Datas
         public string Name { get; set; }
         public int CompanyId { get; set; }
         public decimal Price { get; set; }
+        public string? CompanyName { get; set; }
     }
 }

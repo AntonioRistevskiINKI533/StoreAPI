@@ -99,9 +99,9 @@ namespace StoreAPI.Services
             };
         }
 
-        public async Task<PagedModel<ProductData>> GetAllProductsPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<ProductData>> GetAllProductsPaged(int pageIndex, int pageSize, int? companyId)
         {
-            var companies = await _productRepository.GetAllPaged(pageIndex, pageSize);
+            var companies = await _productRepository.GetAllPaged(pageIndex, pageSize, companyId);
 
             var productData = companies.Items.Select(x => new ProductData
             {
@@ -109,7 +109,8 @@ namespace StoreAPI.Services
                 RegistrationNumber = x.RegistrationNumber,
                 Name = x.Name,
                 CompanyId = x.CompanyId,
-                Price = x.Price
+                Price = x.Price,
+                CompanyName = x.CompanyName
             }).ToList();
 
             var result = new PagedModel<ProductData>()

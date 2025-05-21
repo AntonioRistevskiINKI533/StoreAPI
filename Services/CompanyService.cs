@@ -22,10 +22,15 @@ namespace StoreAPI.Services
 
         public async Task AddCompany(AddCompanyRequest request)
         {
-            var company = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone);
+            var company = await _companyRepository.GetByNameAddressOrPhone(request.Name, request.Address, request.Phone);
 
             if (company != null)
             {
+                if (company.Name == request.Name)
+                {
+                    throw new Exception("Company with same name already exists");
+                }
+
                 if (company.Address == request.Address)
                 {
                     throw new Exception("Company with same address already exists");
@@ -39,6 +44,7 @@ namespace StoreAPI.Services
 
             company = new Company
             {
+                Name = request.Name,
                 Address = request.Address,
                 Phone = request.Phone
             };
@@ -48,7 +54,7 @@ namespace StoreAPI.Services
             return;
         }
 
-        public async Task UpdateCompany(UpdateCompanyRequest request)
+        public async Task UpdateCompany(UpdateCompanyRequest request)//TODO integrations tests from service to repo that check database constraints maybe???
         {
             var company = await _companyRepository.GetById(request.Id);
 
@@ -57,11 +63,15 @@ namespace StoreAPI.Services
                 throw new Exception("Company does not exist");
             }
 
-            var existingCompany = await _companyRepository.GetByAddressOrPhone(request.Address, request.Phone, request.Id);
+            var existingCompany = await _companyRepository.GetByNameAddressOrPhone(request.Name, request.Address, request.Phone, request.Id);
 
-            //fix everywhere it finds with same id
             if (existingCompany != null)
             {
+                if (existingCompany.Name == request.Name)
+                {
+                    throw new Exception("Company with same name already exists");
+                }
+
                 if (existingCompany.Address == request.Address)
                 {
                     throw new Exception("Company with same address already exists");
@@ -73,6 +83,7 @@ namespace StoreAPI.Services
                 }
             }
 
+            company.Name = request.Name;
             company.Address = request.Address;
             company.Phone = request.Phone;
 
@@ -93,6 +104,7 @@ namespace StoreAPI.Services
             return new CompanyData
             {
                 Id = company.Id,
+                Name = company.Name,
                 Address = company.Address,
                 Phone = company.Phone
             };
@@ -105,6 +117,7 @@ namespace StoreAPI.Services
             var companyData = companies.Items.Select(x => new CompanyData
             {
                 Id = x.Id,
+                Name = x.Name,
                 Address = x.Address,
                 Phone = x.Phone
             }).ToList();

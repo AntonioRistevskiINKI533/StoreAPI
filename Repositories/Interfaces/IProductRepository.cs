@@ -10,7 +10,7 @@ namespace StoreAPI.Repositories.Interfaces
         Task<Product> GetByCompanyId(int companyId);
         Task<Product> Add(Product product);
         Task<Product> Update(Product product);
-        Task<PagedModel<Product>> GetAllPaged(int pageIndex, int pageSize);
+        Task<PagedModel<ProductData>> GetAllPaged(int pageIndex, int pageSize, int? companyId);
         Task<Product> GetById(int id);
         Task Remove(Product product);
     }

@@ -32,20 +32,31 @@ namespace StoreAPI.Repositories
             return productSale;
         }
 
-        public async Task<PagedModel<ProductSale>> GetAllPaged(int pageIndex, int pageSize, DateTime? dateFrom, DateTime? dateTo, int? productId)
+        public async Task<PagedModel<ProductSaleData>> GetAllPaged(int pageIndex, int pageSize, DateTime? dateFrom, DateTime? dateTo, int? productId)
         {
-            var items = await _context.ProductSale.Where(x => 
-                (x.ProductId == productId || productId == null) &&
-                (x.Date >= dateFrom || dateFrom == null) &&
-                (x.Date <= dateTo || dateTo == null)).ToListAsync();
+            var query = from sale in _context.ProductSale
+                         join product in _context.Product
+                             on sale.ProductId equals product.Id
+                         where (productId == null || sale.ProductId == productId) &&
+                               (dateFrom == null || sale.Date >= dateFrom) &&
+                               (dateTo == null || sale.Date <= dateTo)
+                         select new ProductSaleData
+                         {
+                             Id = sale.Id,
+                             ProductId = sale.ProductId,
+                             SoldAmount = sale.SoldAmount,
+                             PricePerUnit = sale.PricePerUnit,
+                             Date = sale.Date,
+                             ProductName = product.Name
+                         };
 
-            var totalItems = items.Count;
+            var totalItems = await query.CountAsync();
 
-            items = items.Skip(pageIndex * pageSize)
+            var items = query.Skip(pageIndex * pageSize)
                             .Take(pageSize)
                             .ToList();
 
-            var result = new PagedModel<ProductSale>()
+            var result = new PagedModel<ProductSaleData>()
             {
                 TotalItems = totalItems,
                 Items = items,

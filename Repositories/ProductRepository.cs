@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using StoreAPI.Repositories.Interfaces;
 using StoreAPI.Models.Contexts;
+using System.ComponentModel.Design;
 
 namespace StoreAPI.Repositories
 {
@@ -47,17 +48,29 @@ namespace StoreAPI.Repositories
             return product;
         }
 
-        public async Task<PagedModel<Product>> GetAllPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<ProductData>> GetAllPaged(int pageIndex, int pageSize, int? companyId)
         {
-            var items = await _context.Product.ToListAsync();
+            var query = from product in _context.Product
+                        join company in _context.Company
+                            on product.CompanyId equals company.Id
+                        where (companyId == null || product.CompanyId == companyId)
+                        select new ProductData
+                        {
+                            Id = product.Id,
+                            RegistrationNumber = product.RegistrationNumber,
+                            Name = product.Name,
+                            CompanyId = product.CompanyId,
+                            Price = product.Price,
+                            CompanyName = company.Name
+                        };
 
-            var totalItems = items.Count;
+            var totalItems = await query.CountAsync();
 
-            items = items.Skip(pageIndex * pageSize)
+            var items = query.Skip(pageIndex * pageSize)
                             .Take(pageSize)
                             .ToList();
 
-            var result = new PagedModel<Product>()
+            var result = new PagedModel<ProductData>()
             {
                 TotalItems = totalItems,
                 Items = items,
