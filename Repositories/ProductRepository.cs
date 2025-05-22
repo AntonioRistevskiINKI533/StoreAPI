@@ -48,12 +48,13 @@ namespace StoreAPI.Repositories
             return product;
         }
 
-        public async Task<PagedModel<ProductData>> GetAllPaged(int pageIndex, int pageSize, int? companyId)
+        public async Task<PagedModel<ProductData>> GetAllPaged(int pageIndex, int pageSize, int? companyId, string? productName)
         {
             var query = from product in _context.Product
                         join company in _context.Company
                             on product.CompanyId equals company.Id
-                        where (companyId == null || product.CompanyId == companyId)
+                        where (companyId == null || product.CompanyId == companyId) &&
+                        (productName == null || product.Name.Trim().ToLower().Contains(productName.Trim().ToLower()))
                         select new ProductData
                         {
                             Id = product.Id,
