@@ -18,6 +18,11 @@ namespace StoreAPI.Repositories
             _context = context;
         }
 
+        public async Task<ProductSale> GetByProductId(int productId)
+        {
+            return await _context.ProductSale.Where(x => x.ProductId == productId).FirstOrDefaultAsync();
+        }
+
         public async Task<ProductSale> Add(ProductSale productSale)
         {
             _context.ProductSale.Add(productSale);

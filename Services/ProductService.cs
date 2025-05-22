@@ -6,16 +6,19 @@ using StoreAPI.Models.Requests;
 using StoreAPI.Models;
 using BCrypt.Net;
 using StoreAPI.Enums;
+using System.ComponentModel.Design;
 
 namespace StoreAPI.Services
 {
     public class ProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly IProductSaleRepository _productSaleRepository;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository, IProductSaleRepository productSaleRepository)
         {
             _productRepository = productRepository;
+            _productSaleRepository = productSaleRepository;
         }
 
         public async Task AddProduct(AddProductRequest request)
@@ -129,6 +132,13 @@ namespace StoreAPI.Services
             if (product == null)
             {
                 throw new Exception("Product does not exist");
+            }
+
+            var productSale = await _productSaleRepository.GetByProductId(productId);
+
+            if (productSale != null)
+            {
+                throw new Exception("Product has product sales, please delete them first");
             }
 
             await _productRepository.Remove(product);

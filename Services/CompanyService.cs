@@ -140,9 +140,9 @@ namespace StoreAPI.Services
                 throw new Exception("Company does not exist");
             }
 
-            var products = await _productRepository.GetByCompanyId(companyId);
+            var product = await _productRepository.GetByCompanyId(companyId);
 
-            if (products != null)
+            if (product != null)
             {
                 throw new Exception("Company has products, please delete them first");
             }

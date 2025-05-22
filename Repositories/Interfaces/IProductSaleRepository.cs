@@ -5,6 +5,7 @@ namespace StoreAPI.Repositories.Interfaces
 {
     public interface IProductSaleRepository
     {
+        Task<ProductSale> GetByProductId(int productId);
         Task<ProductSale> Add(ProductSale productSale);
         Task<ProductSale> Update(ProductSale productSale);
         Task<PagedModel<ProductSaleData>> GetAllPaged(int pageIndex, int pageSize, DateTime? dateFrom, DateTime? dateTo, int? productId);
