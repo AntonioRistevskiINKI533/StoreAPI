@@ -123,6 +123,7 @@ namespace StoreAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         [ProducesResponseType(typeof(ActionResult<UserData>), 200)]
         public async Task<ActionResult<UserData>> GetUser(int userId)
@@ -139,9 +140,9 @@ namespace StoreAPI.Controllers
             }
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<PagedModel<UserData>>), 200)]//this could also be different
+        [ProducesResponseType(typeof(PagedModel<UserData>), 200)]//this could also be different
         public async Task<ActionResult<PagedModel<UserData>>> GetAllUsersPaged(int pageIndex, int pageSize)
         {
             try

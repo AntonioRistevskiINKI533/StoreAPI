@@ -23,7 +23,7 @@ namespace StoreAPI.Controllers
 
         [Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<List<RoleData>>), 200)]
+        [ProducesResponseType(typeof(List<RoleData>), 200)]
         public async Task<ActionResult<List<RoleData>>> GetAllRoles()
         {
             try
