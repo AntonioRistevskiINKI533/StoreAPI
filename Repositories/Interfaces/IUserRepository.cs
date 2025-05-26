@@ -8,7 +8,7 @@ namespace StoreAPI.Repositories.Interfaces
         Task<User> GetByUsernameOrEmail(string username, string email, int? userId = null);
         Task<User> Add(User user);
         Task<User> Update(User user);
-        Task<PagedModel<User>> GetAllPaged(int pageIndex, int pageSize);
+        Task<PagedModel<UserData>> GetAllPaged(int pageIndex, int pageSize, string? fullName, int? roleId);
         Task<User> GetById(int id);
         Task Remove(User user);
     }

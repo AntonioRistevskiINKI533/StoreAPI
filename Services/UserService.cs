@@ -184,9 +184,9 @@ namespace StoreAPI.Services
             };
         }
 
-        public async Task<PagedModel<UserData>> GetAllUsersPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<UserData>> GetAllUsersPaged(int pageIndex, int pageSize, string? fullName, int? roleId)
         {
-            var users = await _userRepository.GetAllPaged(pageIndex, pageSize);
+            var users = await _userRepository.GetAllPaged(pageIndex, pageSize, fullName, roleId);
 
             var userData = users.Items.Select(x => new UserData
             {
@@ -196,6 +196,7 @@ namespace StoreAPI.Services
                 Name = x.Name,
                 Surname = x.Surname,
                 RoleId = x.RoleId,
+                RoleName = x.RoleName
             }).ToList();
 
             var result = new PagedModel<UserData>()

@@ -72,7 +72,7 @@ namespace StoreAPI.Controllers
 
         [Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(PagedModel<CompanyData>), 200)]//this could also be different
+        [ProducesResponseType(typeof(PagedModel<CompanyData>), 200)]
         public async Task<ActionResult<PagedModel<CompanyData>>> GetAllCompaniesPaged(int pageIndex, int pageSize)
         {
             try

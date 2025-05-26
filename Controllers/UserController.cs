@@ -140,14 +140,14 @@ namespace StoreAPI.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(PagedModel<UserData>), 200)]//this could also be different
-        public async Task<ActionResult<PagedModel<UserData>>> GetAllUsersPaged(int pageIndex, int pageSize)
+        [ProducesResponseType(typeof(PagedModel<UserData>), 200)]
+        public async Task<ActionResult<PagedModel<UserData>>> GetAllUsersPaged(int pageIndex, int pageSize, string? fullName, int? roleId)
         {
             try
             {
-                var users = await _userService.GetAllUsersPaged(pageIndex, pageSize);
+                var users = await _userService.GetAllUsersPaged(pageIndex, pageSize, fullName, roleId);
 
                 return Ok(users);
             }

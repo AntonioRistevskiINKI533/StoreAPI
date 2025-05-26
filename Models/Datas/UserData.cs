@@ -14,5 +14,6 @@ namespace StoreAPI.Models.Datas
         public string Name { get; set; }
         public string Surname { get; set; }
         public int RoleId { get; set; }
+        public string? RoleName { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using StoreAPI.Repositories.Interfaces;
 using StoreAPI.Models.Contexts;
+using System.ComponentModel.Design;
 
 namespace StoreAPI.Repositories
 {
@@ -37,17 +38,33 @@ namespace StoreAPI.Repositories
             return user;
         }
 
-        public async Task<PagedModel<User>> GetAllPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<UserData>> GetAllPaged(int pageIndex, int pageSize, string? fullName, int? roleId)
         {
-            var items = await _context.User.ToListAsync();
+            var query = from user in _context.User
+                        join role in _context.Role
+                            on user.RoleId equals role.Id
+            where (roleId == null || user.RoleId == roleId) &&
+                        (fullName == null || 
+                        (user.Name.Trim() + ' ' + user.Surname.Trim()).ToLower().Contains(fullName.Trim().ToLower()) || 
+                        (user.Username.Trim().ToLower().Contains(fullName.Trim().ToLower())))
+                        select new UserData
+                        {
+                            Id = user.Id,
+                            Username = user.Username,
+                            Email = user.Email,
+                            Name = user.Name,
+                            Surname = user.Surname,
+                            RoleId = user.RoleId,
+                            RoleName = role.Name
+                        };
 
-            var totalItems = items.Count;
+            var totalItems = await query.CountAsync();
 
-            items = items.Skip(pageIndex * pageSize)
+            var items = query.Skip(pageIndex * pageSize)
                             .Take(pageSize)
                             .ToList();
 
-            var result = new PagedModel<User>()
+            var result = new PagedModel<UserData>()
             {
                 TotalItems = totalItems,
                 Items = items,
