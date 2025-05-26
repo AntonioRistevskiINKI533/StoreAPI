@@ -22,7 +22,7 @@ namespace StoreAPI.Controllers
         }
 
         [HttpPost("[action]")]
-        [ProducesResponseType(typeof(ActionResult<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(LoginResponse), 200)]
         public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
         {
             try
