@@ -54,7 +54,7 @@ namespace StoreAPI.Controllers
         }
 
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<ProductSaleData>), 200)]
+        [ProducesResponseType(typeof(ProductSaleData), 200)]
         public async Task<ActionResult<ProductSaleData>> GetProductSale(int productSaleId)
         {
             try

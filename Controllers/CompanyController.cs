@@ -55,7 +55,7 @@ namespace StoreAPI.Controllers
         }
 
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<CompanyData>), 200)]
+        [ProducesResponseType(typeof(CompanyData), 200)]
         public async Task<ActionResult<CompanyData>> GetCompany(int companyId)
         {
             try

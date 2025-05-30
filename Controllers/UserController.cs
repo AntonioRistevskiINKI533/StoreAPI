@@ -125,7 +125,7 @@ namespace StoreAPI.Controllers
 
         [Authorize]
         [HttpGet("[action]")]
-        [ProducesResponseType(typeof(ActionResult<UserData>), 200)]
+        [ProducesResponseType(typeof(UserData), 200)]
         public async Task<ActionResult<UserData>> GetUser(int userId)
         {
             try
