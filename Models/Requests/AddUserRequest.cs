@@ -29,7 +29,7 @@ namespace StoreAPI.Models.Requests
         public int RoleId { get; set; }
 
         [Required]
-        [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
         public string Password { get; set; }
     }
 }

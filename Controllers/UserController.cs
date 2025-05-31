@@ -98,7 +98,7 @@ namespace StoreAPI.Controllers
             {
                 await _userService.AddUser(request);
 
-                return Ok();
+               return Ok();
             }
             catch (Exception ex)
             {
