@@ -27,5 +27,8 @@ namespace StoreAPI.Models.Requests
         [Required]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Surname must be between 1 and 100 characters")]
         public string Surname { get; set; }
+
+        [Required]
+        public int RoleId { get; set; }
     }
 }

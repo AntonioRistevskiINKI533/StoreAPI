@@ -158,6 +158,7 @@ namespace StoreAPI.Services
             user.Email = request.Email;
             user.Name = request.Name;
             user.Surname = request.Surname;
+            user.RoleId = request.RoleId;
 
             await _userRepository.Update(user);
 
