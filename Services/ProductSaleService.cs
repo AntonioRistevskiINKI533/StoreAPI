@@ -123,5 +123,22 @@ namespace StoreAPI.Services
 
             return;
         }
+
+        public async Task<List<ProductSaleSumsData>> GetSums(DateTime? dateFrom, DateTime? dateTo)
+        {
+            var productSaleSums = await _productSaleRepository.GetSums(dateFrom, dateTo);
+
+            var productSaleSumsData = productSaleSums.Select(x => new ProductSaleSumsData
+            {
+                ProductId = x.ProductId,
+                Name = x.Name,
+                SumOfSales = x.SumOfSales,
+                SumOfUnits = x.SumOfUnits,
+                SumOfTotalSalePrice = x.SumOfTotalSalePrice,
+
+            }).ToList();
+
+            return productSaleSumsData;
+        }
     }
 }

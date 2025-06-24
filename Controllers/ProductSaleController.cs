@@ -101,5 +101,21 @@ namespace StoreAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [HttpGet("[action]")]
+        [ProducesResponseType(typeof(List<ProductSaleSumsData>), 200)]
+        public async Task<ActionResult<List<ProductSaleSumsData>>> GetAllProductSaleSums(DateTime? dateFrom, DateTime? dateTo)
+        {
+            try
+            {
+                var productSaleSums = await _productSaleService.GetSums(dateFrom, dateTo);
+
+                return Ok(productSaleSums);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

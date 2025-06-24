@@ -11,5 +11,6 @@ namespace StoreAPI.Repositories.Interfaces
         Task<PagedModel<ProductSaleData>> GetAllPaged(int pageIndex, int pageSize, DateTime? dateFrom, DateTime? dateTo, int? productId);
         Task<ProductSale> GetById(int id);
         Task Remove(ProductSale productSale);
+        Task<List<ProductSaleSumsData>> GetSums(DateTime? dateFrom, DateTime? dateTo);
     }
 }

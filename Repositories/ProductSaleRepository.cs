@@ -80,5 +80,25 @@ namespace StoreAPI.Repositories
            _context.ProductSale.Remove(productSale);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<ProductSaleSumsData>> GetSums(DateTime? dateFrom, DateTime? dateTo)
+        {
+            var items = from sale in _context.ProductSale
+                        join product in _context.Product
+                            on sale.ProductId equals product.Id
+                        where (dateFrom == null || sale.Date >= dateFrom) &&
+                               (dateTo == null || sale.Date <= dateTo)
+                        group new { sale, product } by new { product.Id, product.Name } into g
+                        select new ProductSaleSumsData
+                        {
+                            ProductId = g.Key.Id,
+                            Name = g.Key.Name,
+                            SumOfSales = g.LongCount(),
+                            SumOfUnits = g.Sum(x => x.sale.SoldAmount),
+                            SumOfTotalSalePrice = g.Sum(x => x.sale.PricePerUnit * x.sale.SoldAmount)
+                        };
+
+            return items.ToList();
+        }
     }
 }
