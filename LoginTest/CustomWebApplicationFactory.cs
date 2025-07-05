@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.TestHost;
 using StoreAPI.Models.Contexts;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using StoreAPI.Repositories.Interfaces;
+using StoreAPI.Repositories;
 
 
 
@@ -24,14 +26,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureAppConfiguration((context, config) =>
         {
-/*            var inMemorySettings = new Dictionary<string, string?>
+            //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            var inMemorySettings = new Dictionary<string, string?>
             {
-                ["StoreDatabaseSettings:ConnectionString"] = _mongoRunner.ConnectionString,
-                ["StoreDatabaseSettings:DatabaseName"] = "TestDb",
-                ["StoreDatabaseSettings:RdfCollectionName"] = "RdfTest"
+                ["StoreDatabaseSettings:ConnectionString"] = "data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=StoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;"
             };
 
-            config.AddInMemoryCollection(inMemorySettings);*/
+
+            config.AddInMemoryCollection(inMemorySettings);
         });
 
         builder.ConfigureLogging(logging =>
@@ -61,17 +64,32 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
 
             // Add an in-memory database for testing
+            /*            services.AddDbContext<StoreContext>(options =>
+                        {
+                            options.UseInMemoryDatabase("InMemoryTestDb");
+                        });*/
             services.AddDbContext<StoreContext>(options =>
             {
-                options.UseInMemoryDatabase("InMemoryTestDb");
+                options.UseSqlServer("data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=StoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;");
             });
+
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
+            services.AddScoped<IProductSaleRepository, ProductSaleRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped<CompanyService>();
             services.AddScoped<ProductSaleService>();
             services.AddScoped<ProductService>();
             services.AddScoped<RoleService>();
-            services.AddScoped<TokenService>();
             services.AddScoped<UserService>();
+            services.AddScoped<TokenService>();
+
+            var sp = services.BuildServiceProvider();
+            using var scope = sp.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            db.Database.Migrate(); // Applies migrations at startup
         });
 
     }

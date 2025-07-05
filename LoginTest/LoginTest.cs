@@ -33,8 +33,10 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             Username = "testuser",
             Email = "testuser@example.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-            RoleId = (int)RoleEnum.Employee,
             //CreatedAt = DateTime.UtcNow
+            Name = "Name",
+            Surname = "Surname",
+            RoleId = (int)RoleEnum.Employee,
         };
         context.User.Add(testUser);
         await context.SaveChangesAsync();
@@ -46,7 +48,7 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         };
 
         // Act: send login request
-        var response = await _client.PostAsJsonAsync("/api/User/Login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/User/Login", loginRequest);
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -65,7 +67,7 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             Password = "wrongpassword"
         };
 
-        var response = await _client.PostAsJsonAsync("/api/User/Login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/User/Login", loginRequest);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
