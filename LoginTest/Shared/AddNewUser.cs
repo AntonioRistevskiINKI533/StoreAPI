@@ -10,7 +10,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace StoreAPI.IntegrationTests.Shared
-{
+{//TODO remove or use somehow
     internal class Helper
     {
         private async Task<User> CreateTestUserAsync(CustomWebApplicationFactory _factory)

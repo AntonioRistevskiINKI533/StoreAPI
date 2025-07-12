@@ -168,4 +168,84 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task RemoveUser_WithValidUserIdAndAdminToken_ShouldReturnOk()
+    {
+        // Arrange: create user to be deleted
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var userToRemove = new User
+        {
+            Username = "usertoremove",
+            Email = "usertoremove@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Test123!"),
+            Name = "User",
+            Surname = "ToRemove",
+            RoleId = (int)RoleEnum.Employee
+        };
+
+        var adminUser = new User
+        {
+            Username = "adminuser",
+            Email = "admin@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+            Name = "Admin",
+            Surname = "User",
+            RoleId = (int)RoleEnum.Admin
+        };
+
+        context.User.AddRange(userToRemove, adminUser);
+        await context.SaveChangesAsync();
+
+        // generate token for admin
+        var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        // prepare request
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/User/RemoveUser?userId={userToRemove.Id}");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task RemoveUser_WithNonExistentUserId_ShouldReturnNotFound()
+    {
+        // Arrange: create admin user and token
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = new User
+        {
+            Username = "adminuser2",
+            Email = "admin2@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+            Name = "Admin2",
+            Surname = "User2",
+            RoleId = (int)RoleEnum.Admin
+        };
+
+        context.User.Add(adminUser);
+        await context.SaveChangesAsync();
+
+        var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        // prepare request with non-existent userId
+        int nonExistentUserId = 999999;
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/User/RemoveUser?userId={nonExistentUserId}");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+    }
 }
