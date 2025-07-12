@@ -8,25 +8,34 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using StoreAPI.Services;
 
 namespace StoreAPI.IntegrationTests.Shared
-{//TODO remove or use somehow
-    internal class Helper
+{
+    public class HelperService
     {
-        private async Task<User> CreateTestUserAsync(CustomWebApplicationFactory _factory)
+        private readonly CustomWebApplicationFactory _factory;
+
+        public HelperService(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+        }
+
+        public async Task<User> CreateTestUserAsync(bool isAdmin = false)
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
 
             var testUser = new User
             {
-                Username = "testuser",
-                Email = "testuser@example.com",
+                Username = isAdmin ? "testadmin" : "testuser",
+                Email = isAdmin ? "testadmin@example.com" : "testuser@example.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-                //CreatedAt = DateTime.UtcNow
                 Name = "testname",
                 Surname = "testsurname",
-                RoleId = (int)RoleEnum.Employee,
+                RoleId = isAdmin ? (int)RoleEnum.Admin : (int)RoleEnum.Employee,
             };
 
             context.User.Add(testUser);

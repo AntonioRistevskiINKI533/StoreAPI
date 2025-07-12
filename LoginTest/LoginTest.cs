@@ -11,16 +11,19 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Requests;
 using StoreAPI.Enums;
 using StoreAPI.Models.Datas;
+using StoreAPI.IntegrationTests.Shared;
 
 public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
+    private readonly HelperService _helperService;
 
     public UserIntegrationTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
+        _helperService = new HelperService(_factory);
     }
 
     [Fact]
@@ -29,18 +32,8 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         // Arrange: create test user in database
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var testUser = new User
-        {
-            Username = "testuser",
-            Email = "testuser@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-            //CreatedAt = DateTime.UtcNow
-            Name = "testname",
-            Surname = "testsurname",
-            RoleId = (int)RoleEnum.Employee,
-        };
-        context.User.Add(testUser);
-        await context.SaveChangesAsync();
+
+        var testUser = await _helperService.CreateTestUserAsync();
 
         var loginRequest = new LoginRequest
         {
@@ -84,19 +77,7 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var testUser = new User
-        {
-            Username = "testuser",
-            Email = "testuser@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-            //CreatedAt = DateTime.UtcNow
-            Name = "testname",
-            Surname = "testsurname",
-            RoleId = (int)RoleEnum.Employee,
-        };
-
-        context.User.Add(testUser);
-        await context.SaveChangesAsync();
+        var testUser = await _helperService.CreateTestUserAsync();
 
         // generate JWT token
         var token = tokenService.GenerateToken(testUser.Id, "Employee");
@@ -138,19 +119,7 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var testUser = new User
-        {
-            Username = "testuser",
-            Email = "testuser@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-            //CreatedAt = DateTime.UtcNow
-            Name = "testname",
-            Surname = "testsurname",
-            RoleId = (int)RoleEnum.Employee,
-        };
-
-        context.User.Add(testUser);
-        await context.SaveChangesAsync();
+        var testUser = await _helperService.CreateTestUserAsync();
 
         // generate JWT token
         var token = tokenService.GenerateToken(testUser.Id, "Employee");
@@ -177,28 +146,9 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var userToRemove = new User
-        {
-            Username = "usertoremove",
-            Email = "usertoremove@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Test123!"),
-            Name = "User",
-            Surname = "ToRemove",
-            RoleId = (int)RoleEnum.Employee
-        };
+        var userToRemove = await _helperService.CreateTestUserAsync();
 
-        var adminUser = new User
-        {
-            Username = "adminuser",
-            Email = "admin@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
-            Name = "Admin",
-            Surname = "User",
-            RoleId = (int)RoleEnum.Admin
-        };
-
-        context.User.AddRange(userToRemove, adminUser);
-        await context.SaveChangesAsync();
+        var adminUser = await _helperService.CreateTestUserAsync(true);
 
         // generate token for admin
         var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
@@ -212,6 +162,9 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
     }
 
     [Fact]
@@ -222,18 +175,7 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = new User
-        {
-            Username = "adminuser2",
-            Email = "admin2@example.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
-            Name = "Admin2",
-            Surname = "User2",
-            RoleId = (int)RoleEnum.Admin
-        };
-
-        context.User.Add(adminUser);
-        await context.SaveChangesAsync();
+        var adminUser = await _helperService.CreateTestUserAsync(true);
 
         var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
 
@@ -247,5 +189,8 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
     }
 }
