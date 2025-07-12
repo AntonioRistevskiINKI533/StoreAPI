@@ -129,4 +129,43 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task GetUserProfile_NotExistentUser_ShouldReturnUnauthorized()
+    {
+        // Arrange: create test user and generate token
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var testUser = new User
+        {
+            Username = "testuser",
+            Email = "testuser@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
+            //CreatedAt = DateTime.UtcNow
+            Name = "testname",
+            Surname = "testsurname",
+            RoleId = (int)RoleEnum.Employee,
+        };
+
+        context.User.Add(testUser);
+        await context.SaveChangesAsync();
+
+        // generate JWT token
+        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+
+        // attach token to request
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        // User is removed to simulate non-existent user
+        context.User.Remove(testUser);
+        await context.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/User/GetUserProfile");
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+    }
 }
