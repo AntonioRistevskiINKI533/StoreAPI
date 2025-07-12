@@ -34,8 +34,8 @@ public class UserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             Email = "testuser@example.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
             //CreatedAt = DateTime.UtcNow
-            Name = "Name",
-            Surname = "Surname",
+            Name = "testname",
+            Surname = "testsurname",
             RoleId = (int)RoleEnum.Employee,
         };
         context.User.Add(testUser);

@@ -26,11 +26,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
 
             var inMemorySettings = new Dictionary<string, string?>
             {
-                ["StoreDatabaseSettings:ConnectionString"] = "data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=StoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;"
+                ["StoreDatabaseSettings:ConnectionString"] = connectionString
             };
 
 
@@ -71,6 +71,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.AddDbContext<StoreContext>(options =>
             {
                 options.UseSqlServer("data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=StoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;");
+                //options.UseInMemoryDatabase("TestDb"); could use this for inMemory tests
             });
 
             services.AddScoped<ICompanyRepository, CompanyRepository>();
