@@ -25,7 +25,6 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
     [Fact]
     public async Task GetUserProfile_WithValidToken_ShouldReturnUserProfile()
     {
-        // Arrange: create test user and generate token
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();

@@ -30,7 +30,6 @@ public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFac
     [Fact]
     public async Task GetAllRoles_WithValidToken_ShouldReturnListOfRoles()
     {
-        // Arrange: create test user and generate token
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
