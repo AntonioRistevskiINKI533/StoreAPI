@@ -43,7 +43,7 @@ public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         loginResponse.Should().NotBeNull();
         loginResponse!.Token.Should().NotBeNullOrEmpty();
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }

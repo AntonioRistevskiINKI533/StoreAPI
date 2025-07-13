@@ -40,7 +40,7 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -68,7 +68,7 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }

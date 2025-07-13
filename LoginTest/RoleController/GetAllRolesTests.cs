@@ -49,7 +49,7 @@ public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFac
         roles.Should().NotBeNull();
         roles.Should().NotBeEmpty();
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }

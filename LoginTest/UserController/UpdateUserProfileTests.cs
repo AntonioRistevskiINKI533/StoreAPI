@@ -58,7 +58,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         updatedUser.Name.Should().Be(updateRequest.Name);
         updatedUser.Surname.Should().Be(updateRequest.Surname);
 
-        // Clean up
+        //Clean up
         context.User.Remove(updatedUser);
         await context.SaveChangesAsync();
     }
@@ -110,7 +110,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         context.User.Remove(anotherUser);
         await context.SaveChangesAsync();
@@ -147,7 +147,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         context.User.Remove(anotherUser);
         await context.SaveChangesAsync();
@@ -182,7 +182,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -215,7 +215,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -248,7 +248,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -281,7 +281,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -314,7 +314,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -347,7 +347,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -380,7 +380,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }

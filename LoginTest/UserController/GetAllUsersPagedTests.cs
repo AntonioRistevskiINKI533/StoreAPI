@@ -51,7 +51,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         result.Items.Count.Should().BeGreaterThanOrEqualTo(3); // should contain at least the three created users
         //TODO create TEST  database
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         context.User.Remove(anotherUser1);
         context.User.Remove(anotherUser2);
@@ -81,7 +81,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         result.Should().NotBeNull();
         result!.Items.Should().Contain(u => u.Name == testUser.Name);
 
-        // Clean up
+        //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -109,7 +109,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         result.Should().NotBeNull();
         result!.Items.Should().Contain(u => u.Id == employeeUser.Id);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         context.User.Remove(employeeUser);
         await context.SaveChangesAsync();

@@ -73,7 +73,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         loginResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         context.User.Remove(addedUser!);
         await context.SaveChangesAsync();
@@ -109,7 +109,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
 
-        // Clean up
+        //Clean up
         context.User.Remove(employeeUser);
         await context.SaveChangesAsync();
     }
@@ -146,7 +146,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         context.User.Remove(existingUser);
         await context.SaveChangesAsync();
@@ -184,7 +184,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         context.User.Remove(existingUser);
         await context.SaveChangesAsync();
@@ -220,7 +220,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -255,7 +255,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -290,7 +290,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -325,7 +325,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -360,7 +360,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -395,7 +395,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -430,7 +430,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -465,7 +465,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -500,7 +500,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        // Clean up
+        //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
