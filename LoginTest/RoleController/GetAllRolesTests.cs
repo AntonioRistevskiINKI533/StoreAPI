@@ -38,14 +38,11 @@ public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFac
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, "Employee");
 
-        // prepare request
         var request = new HttpRequestMessage(HttpMethod.Get, "/Role/GetAllRoles");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
         var roles = await response.Content.ReadFromJsonAsync<List<RoleData>>();

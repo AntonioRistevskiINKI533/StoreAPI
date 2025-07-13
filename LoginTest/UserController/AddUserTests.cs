@@ -54,7 +54,6 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        // Clean up: remove added user
         var addedUser = await context.User.FirstOrDefaultAsync(u => u.Username == addRequest.Username);
         addedUser.Should().NotBeNull();
         addedUser.Username.Should().Be(addedUser.Username);
@@ -72,9 +71,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         // Test if user can log in with the created credentials
         var loginResponse = await _client.PostAsJsonAsync("/User/Login", loginRequest);
 
-        // Assert
         loginResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
+        // Clean up
         context.User.Remove(adminUser);
         context.User.Remove(addedUser!);
         await context.SaveChangesAsync();
@@ -147,6 +146,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
+        // Clean up
         context.User.Remove(adminUser);
         context.User.Remove(existingUser);
         await context.SaveChangesAsync();
@@ -184,6 +184,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
+        // Clean up
         context.User.Remove(adminUser);
         context.User.Remove(existingUser);
         await context.SaveChangesAsync();
@@ -219,6 +220,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
+        // Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -253,6 +255,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
+        // Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -287,6 +290,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
+        // Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }

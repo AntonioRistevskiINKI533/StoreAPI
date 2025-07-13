@@ -25,7 +25,6 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task UpdateUserProfile_WithValidTokenAndData_ShouldReturnOk()
     {
-        // Arrange: create test user and generate token
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
@@ -48,13 +47,10 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        // Optionally verify user data is updated in DB
         var updatedUser = await context.User.FindAsync(testUser.Id);
         updatedUser.Should().NotBeNull();
         updatedUser.Username.Should().Be(updateRequest.Username);
@@ -86,12 +82,10 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task UpdateUserProfile_WithExistingUsername_ShouldReturnBadRequest()
     {
-        // Arrange
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        // Create two users: testUser (who will try to update), and anotherUser (whose username already exists)
         var testUser = await _helperService.CreateTestUserAsync();
 
         var anotherUser = await _helperService.CreateTestUserAsync();
@@ -112,10 +106,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
         // Clean up
@@ -127,12 +119,10 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task UpdateUserProfile_WithExistingEmail_ShouldReturnBadRequest()
     {
-        // Arrange
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        // Create two users: testUser (who will try to update), and anotherUser (whose username already exists)
         var testUser = await _helperService.CreateTestUserAsync();
 
         var anotherUser = await _helperService.CreateTestUserAsync();
@@ -153,10 +143,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
         // Clean up
@@ -168,7 +156,6 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task UpdateUserProfile_WithInvalidEmailFormat_ShouldReturnBadRequest()
     {
-        // Arrange: create test user and generate token
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
@@ -191,10 +178,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
         // Clean up

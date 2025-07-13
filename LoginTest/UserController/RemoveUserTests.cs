@@ -23,7 +23,6 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
     [Fact]
     public async Task RemoveUser_WithValidUserIdAndAdminToken_ShouldReturnOk()
     {
-        // Arrange: create user to be deleted
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
@@ -32,19 +31,16 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var adminUser = await _helperService.CreateTestUserAsync(true);
 
-        // generate token for admin
         var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
 
-        // prepare request
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/User/RemoveUser?userId={userToRemove.Id}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
+        // Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
@@ -52,7 +48,6 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
     [Fact]
     public async Task RemoveUser_WithNonExistentUserId_ShouldReturnNotFound()
     {
-        // Arrange: create admin user and token
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
@@ -66,16 +61,14 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
 
-        // prepare request
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/User/RemoveUser?userId={userToRemove.Id}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
 
-        // Act
         var response = await _client.SendAsync(request);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
+        // Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }

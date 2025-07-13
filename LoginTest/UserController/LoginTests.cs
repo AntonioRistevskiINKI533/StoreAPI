@@ -24,7 +24,6 @@ public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task Login_WithValidCredentials_ShouldReturnToken()
     {
-        // Arrange: create test user in database
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
 
@@ -36,16 +35,15 @@ public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             Password = "Pa$$w0rd!"
         };
 
-        // Act: send login request
         var response = await _client.PostAsJsonAsync("/User/Login", loginRequest);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
         loginResponse.Should().NotBeNull();
         loginResponse!.Token.Should().NotBeNullOrEmpty();
 
+        // Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }

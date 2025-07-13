@@ -32,16 +32,12 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
 
         var testUser = await _helperService.CreateTestUserAsync();
 
-        // generate JWT token
         var token = tokenService.GenerateToken(testUser.Id, "Employee");
 
-        // attach token to request
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // Act
         var response = await _client.GetAsync("/User/GetUserProfile");
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
         var profile = await response.Content.ReadFromJsonAsync<UserData>();
@@ -57,37 +53,30 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
     [Fact]
     public async Task GetUserProfile_WithoutToken_ShouldReturnUnauthorized()
     {
-        // Act
         var response = await _client.GetAsync("/User/GetUserProfile");
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
 
     [Fact]
     public async Task GetUserProfile_NonExistentUser_ShouldReturnUnauthorized()
     {
-        // Arrange: create test user and generate token
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
         var testUser = await _helperService.CreateTestUserAsync();
 
-        // generate JWT token
         var token = tokenService.GenerateToken(testUser.Id, "Employee");
 
-        // attach token to request
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         // User is removed to simulate non-existent user
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
 
-        // Act
         var response = await _client.GetAsync("/User/GetUserProfile");
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
     }
 }
