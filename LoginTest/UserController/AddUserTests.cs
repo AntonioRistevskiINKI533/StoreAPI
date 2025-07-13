@@ -294,4 +294,214 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
     }
+
+    [Fact]
+    public async Task AddUser_WithUsernameTooShort_ShouldReturnBadRequest()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        var addRequest = new AddUserRequest
+        {
+            Username = "abc", // too short (min length = 5)
+            Email = "newuser@example.com",
+            Name = "NewName",
+            Surname = "NewSurname",
+            RoleId = (int)RoleEnum.Employee,
+            Password = "Pa$$w0rd!"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        {
+            Content = JsonContent.Create(addRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task AddUser_WithUsernameTooLong_ShouldReturnBadRequest()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        var addRequest = new AddUserRequest
+        {
+            Username = new string('A', 21), // too long
+            Email = "newuser@example.com",
+            Name = "NewName",
+            Surname = "NewSurname",
+            RoleId = (int)RoleEnum.Employee,
+            Password = "Pa$$w0rd!"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        {
+            Content = JsonContent.Create(addRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task AddUser_WithNameTooShort_ShouldReturnBadRequest()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        var addRequest = new AddUserRequest
+        {
+            Username = "newuser",
+            Email = "newuser@example.com",
+            Name = "",
+            Surname = "NewSurname",
+            RoleId = (int)RoleEnum.Employee,
+            Password = "Pa$$w0rd!"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        {
+            Content = JsonContent.Create(addRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task AddUser_WithNameTooLong_ShouldReturnBadRequest()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        var addRequest = new AddUserRequest
+        {
+            Username = "newuser",
+            Email = "newuser@example.com",
+            Name = new string('A', 101),
+            Surname = "NewSurname",
+            RoleId = (int)RoleEnum.Employee,
+            Password = "Pa$$w0rd!"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        {
+            Content = JsonContent.Create(addRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task AddUser_WithSurnameTooShort_ShouldReturnBadRequest()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        var addRequest = new AddUserRequest
+        {
+            Username = "newuser",
+            Email = "newuser@example.com",
+            Name = "NewName",
+            Surname = "",
+            RoleId = (int)RoleEnum.Employee,
+            Password = "Pa$$w0rd!"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        {
+            Content = JsonContent.Create(addRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task AddUser_WithSurnameTooLong_ShouldReturnBadRequest()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+
+        var addRequest = new AddUserRequest
+        {
+            Username = "newuser",
+            Email = "newuser@example.com",
+            Name = "NewName",
+            Surname = new string('A', 101),
+            RoleId = (int)RoleEnum.Employee,
+            Password = "Pa$$w0rd!"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        {
+            Content = JsonContent.Create(addRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(adminUser);
+        await context.SaveChangesAsync();
+    }
 }
