@@ -26,7 +26,6 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
         _helperService = new HelperService(_factory);
     }
 
-
     [Fact]
     public async Task GetUserProfile_WithValidToken_ShouldReturnUserProfile()
     {
@@ -70,7 +69,7 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
     }
 
     [Fact]
-    public async Task GetUserProfile_NotExistentUser_ShouldReturnUnauthorized()
+    public async Task GetUserProfile_NonExistentUser_ShouldReturnUnauthorized()
     {
         // Arrange: create test user and generate token
         using var scope = _factory.Services.CreateScope();
