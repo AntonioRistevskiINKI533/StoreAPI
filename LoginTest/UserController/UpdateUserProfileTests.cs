@@ -2,15 +2,11 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
 using FluentAssertions;
-using System;
 using Microsoft.Extensions.DependencyInjection;
-using StoreAPI.Models;
 using StoreAPI.Services;
 using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Requests;
-using StoreAPI.Enums;
-using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 
 public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
@@ -61,9 +57,10 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         // Optionally verify user data is updated in DB
         var updatedUser = await context.User.FindAsync(testUser.Id);
         updatedUser.Should().NotBeNull();
-        updatedUser!.Name.Should().Be("UpdatedName");
-        updatedUser.Surname.Should().Be("UpdatedSurname");
-        updatedUser.Email.Should().Be("updatedemail@example.com");
+        updatedUser.Username.Should().Be(updateRequest.Username);
+        updatedUser.Email.Should().Be(updateRequest.Email);
+        updatedUser.Name.Should().Be(updateRequest.Name);
+        updatedUser.Surname.Should().Be(updateRequest.Surname);
 
         // Clean up
         context.User.Remove(updatedUser);

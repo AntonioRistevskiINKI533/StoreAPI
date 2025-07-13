@@ -1,16 +1,10 @@
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
 using FluentAssertions;
-using System;
 using Microsoft.Extensions.DependencyInjection;
-using StoreAPI.Models;
 using StoreAPI.Services;
 using System.Net.Http;
 using StoreAPI.Models.Contexts;
-using StoreAPI.Models.Requests;
-using StoreAPI.Enums;
-using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 
 public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
