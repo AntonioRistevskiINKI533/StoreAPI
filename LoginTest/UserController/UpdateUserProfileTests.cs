@@ -168,7 +168,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "invalid-email-format", // invalid email
+            Email = "invalid-email-format", //invalid email
             Name = "UpdatedName",
             Surname = "UpdatedSurname"
         };
@@ -200,7 +200,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         var updateRequest = new UpdateUserProfileRequest
         {
-            Username = "abc", // too short (min length = 5)
+            Username = "abc", //too short (min length = 5)
             Email = "updatedemail@example.com",
             Name = "UpdatedName",
             Surname = "UpdatedSurname"
@@ -233,7 +233,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         var updateRequest = new UpdateUserProfileRequest
         {
-            Username = new string('A', 21), // too long
+            Username = new string('A', 21), //too long
             Email = "updatedemail@example.com",
             Name = "UpdatedName",
             Surname = "UpdatedSurname"
@@ -268,7 +268,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         {
             Username = "updatedusername",
             Email = "updatedemail@example.com",
-            Name = "", // too short
+            Name = "", //too short
             Surname = "UpdatedSurname"
         };
 
@@ -301,7 +301,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         {
             Username = "updatedusername",
             Email = "updatedemail@example.com",
-            Name = new string('A', 101), // too long (max length = 100)
+            Name = new string('A', 101), //too long (max length = 100)
             Surname = "UpdatedSurname"
         };
 
@@ -335,7 +335,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
             Username = "updatedusername",
             Email = "updatedemail@example.com",
             Name = "UpdatedName",
-            Surname = "" // too short
+            Surname = "" //too short
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -368,7 +368,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
             Username = "updatedusername",
             Email = "updatedemail@example.com",
             Name = "UpdatedName",
-            Surname = new string('B', 101) // too long (max length = 100)
+            Surname = new string('B', 101) //too long (max length = 100)
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")

@@ -45,7 +45,7 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
         profile!.Username.Should().Be(testUser.Username);
         profile.Email.Should().Be(testUser.Email);
 
-        // Cleanup
+        //Cleanup
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
@@ -71,7 +71,7 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
 
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        // User is removed to simulate non-existent user
+        //User is removed to simulate non-existent user
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
 

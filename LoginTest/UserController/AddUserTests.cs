@@ -68,7 +68,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
             Password = addRequest.Password
         };
 
-        // Test if user can log in with the created credentials
+        //Test if user can log in with the created credentials
         var loginResponse = await _client.PostAsJsonAsync("/User/Login", loginRequest);
 
         loginResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -128,7 +128,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var addRequest = new AddUserRequest
         {
-            Username = existingUser.Username, // duplicate username
+            Username = existingUser.Username, //duplicate username
             Email = "newuser@example.com",
             Name = "NewName",
             Surname = "NewSurname",
@@ -167,7 +167,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = existingUser.Email, // duplicate email
+            Email = existingUser.Email, //duplicate email
             Name = "NewName",
             Surname = "NewSurname",
             RoleId = (int)RoleEnum.Employee,
@@ -203,7 +203,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "invalid-email", // invalid
+            Email = "invalid-email", //invalid
             Name = "NewName",
             Surname = "NewSurname",
             RoleId = (int)RoleEnum.Employee,
@@ -242,7 +242,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
             Name = "NewName",
             Surname = "NewSurname",
             RoleId = (int)RoleEnum.Employee,
-            Password = "short" // too short
+            Password = "short" //too short
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
@@ -276,7 +276,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
             Email = "newuser@example.com",
             Name = "NewName",
             Surname = "NewSurname",
-            RoleId = 9999, // non-existent role
+            RoleId = 9999, //non-existent role
             Password = "Pa$$w0rd!"
         };
 
@@ -307,7 +307,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var addRequest = new AddUserRequest
         {
-            Username = "abc", // too short (min length = 5)
+            Username = "abc", //too short (min length = 5)
             Email = "newuser@example.com",
             Name = "NewName",
             Surname = "NewSurname",
@@ -342,7 +342,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var addRequest = new AddUserRequest
         {
-            Username = new string('A', 21), // too long
+            Username = new string('A', 21), //too long
             Email = "newuser@example.com",
             Name = "NewName",
             Surname = "NewSurname",

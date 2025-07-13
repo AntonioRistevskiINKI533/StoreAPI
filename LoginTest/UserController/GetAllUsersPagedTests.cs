@@ -48,7 +48,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
         result.Should().NotBeNull();
         result.Items.Should().NotBeNull();
-        result.Items.Count.Should().BeGreaterThanOrEqualTo(3); // should contain at least the three created users
+        result.Items.Count.Should().BeGreaterThanOrEqualTo(3); //should contain at least the three created users
         //TODO create TEST  database
 
         //Clean up
