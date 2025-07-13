@@ -33,7 +33,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
         var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
         var anotherUser1 = await _helperService.CreateTestUserAsync();
         var anotherUser2 = await _helperService.CreateTestUserAsync();
@@ -68,7 +68,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         var testUser = await _helperService.CreateTestUserAsync();
         await context.SaveChangesAsync();
 
-        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&fullName={testUser.Name}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -93,8 +93,8 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var employeeUser = await _helperService.CreateTestUserAsync(isAdmin: false);
 

@@ -8,6 +8,7 @@ using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
+using StoreAPI.Enums;
 
 public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -31,7 +32,7 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
 
         var testUser = await _helperService.CreateTestUserAsync();
 
-        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
@@ -66,7 +67,7 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
 
         var testUser = await _helperService.CreateTestUserAsync();
 
-        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 

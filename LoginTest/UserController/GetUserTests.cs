@@ -8,6 +8,7 @@ using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
+using StoreAPI.Enums;
 
 public class GetUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -29,11 +30,11 @@ public class GetUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var adminUser = await _helperService.CreateTestUserAsync(true);
 
         var testUser = await _helperService.CreateTestUserAsync();
 
-        var token = tokenService.GenerateToken(adminUser.Id, "Employee");
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetUser?userId={testUser.Id}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -64,11 +65,11 @@ public class GetUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         using var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var adminUser = await _helperService.CreateTestUserAsync(true);
 
         var testUser = await _helperService.CreateTestUserAsync();
 
-        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
         context.User.Remove(testUser);
         await context.SaveChangesAsync();

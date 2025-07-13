@@ -6,6 +6,7 @@ using StoreAPI.Services;
 using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.IntegrationTests.Shared;
+using StoreAPI.Enums;
 
 public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -31,7 +32,7 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var adminUser = await _helperService.CreateTestUserAsync(true);
 
-        var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminToken = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/User/RemoveUser?userId={userToRemove.Id}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);
@@ -59,7 +60,7 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var adminUser = await _helperService.CreateTestUserAsync(true);
 
-        var adminToken = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminToken = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/User/RemoveUser?userId={userToRemove.Id}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", adminToken);

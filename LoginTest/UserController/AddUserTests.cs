@@ -31,8 +31,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -87,7 +87,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
         var employeeUser = await _helperService.CreateTestUserAsync(isAdmin: false);
-        var token = tokenService.GenerateToken(employeeUser.Id, "Employee");
+        var token = tokenService.GenerateToken(employeeUser.Id, ((RoleEnum)employeeUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -121,10 +121,10 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var adminUser = await _helperService.CreateTestUserAsync(true);
         var existingUser = await _helperService.CreateTestUserAsync();
 
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -159,10 +159,10 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
+        var adminUser = await _helperService.CreateTestUserAsync(true);
         var existingUser = await _helperService.CreateTestUserAsync();
 
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -197,8 +197,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -232,8 +232,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -267,8 +267,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -302,8 +302,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -337,8 +337,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -372,8 +372,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -407,8 +407,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -442,8 +442,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
@@ -477,8 +477,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(isAdmin: true);
-        var token = tokenService.GenerateToken(adminUser.Id, "Admin");
+        var adminUser = await _helperService.CreateTestUserAsync(true);
+        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {

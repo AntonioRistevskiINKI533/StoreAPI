@@ -35,7 +35,7 @@ public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFac
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
         var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/Role/GetAllRoles");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
