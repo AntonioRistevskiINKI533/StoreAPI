@@ -70,4 +70,101 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         await context.SaveChangesAsync();
     }
 
+    [Fact]
+    public async Task UpdateUserProfile_WithoutToken_ShouldReturnUnauthorized()
+    {
+        var updateRequest = new UpdateUserProfileRequest
+        {
+            Username = "updatedusername",
+            Email = "updatedemail@example.com",
+            Name = "UpdatedName",
+            Surname = "UpdatedSurname"
+        };
+
+        var response = await _client.PutAsJsonAsync("/User/UpdateUserProfile", updateRequest);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task UpdateUserProfile_WithExistingUsername_ShouldReturnBadRequest()
+    {
+        // Arrange
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        // Create two users: testUser (who will try to update), and anotherUser (whose username already exists)
+        var testUser = await _helperService.CreateTestUserAsync();
+
+        var anotherUser = await _helperService.CreateTestUserAsync();
+
+        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+
+        var updateRequest = new UpdateUserProfileRequest
+        {
+            Username = anotherUser.Username,
+            Email = "updatedemail@example.com",
+            Name = "UpdatedName",
+            Surname = "UpdatedSurname"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+        {
+            Content = JsonContent.Create(updateRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(testUser);
+        context.User.Remove(anotherUser);
+        await context.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task UpdateUserProfile_WithExistingEmail_ShouldReturnBadRequest()
+    {
+        // Arrange
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        // Create two users: testUser (who will try to update), and anotherUser (whose username already exists)
+        var testUser = await _helperService.CreateTestUserAsync();
+
+        var anotherUser = await _helperService.CreateTestUserAsync();
+
+        var token = tokenService.GenerateToken(testUser.Id, "Employee");
+
+        var updateRequest = new UpdateUserProfileRequest
+        {
+            Username = "updatedusername",
+            Email = anotherUser.Email,
+            Name = "UpdatedName",
+            Surname = "UpdatedSurname"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+        {
+            Content = JsonContent.Create(updateRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        // Clean up
+        context.User.Remove(testUser);
+        context.User.Remove(anotherUser);
+        await context.SaveChangesAsync();
+    }
 }
