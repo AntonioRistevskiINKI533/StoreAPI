@@ -96,7 +96,7 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         var adminUser = await _helperService.CreateTestUserAsync(true);
         var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
-        var employeeUser = await _helperService.CreateTestUserAsync(isAdmin: false);
+        var employeeUser = await _helperService.CreateTestUserAsync();
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&roleId={(int)RoleEnum.Employee}");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);

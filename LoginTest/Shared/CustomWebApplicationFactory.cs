@@ -26,7 +26,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+            var connectionString = context.Configuration.GetConnectionString("TestConnection");
 
             var inMemorySettings = new Dictionary<string, string?>
             {
@@ -70,7 +70,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                         });*/
             services.AddDbContext<StoreContext>(options =>
             {
-                options.UseSqlServer("data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=StoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;");
+                options.UseSqlServer("data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=TestStoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;");
                 //options.UseInMemoryDatabase("TestDb"); could use this for inMemory tests
             });
 

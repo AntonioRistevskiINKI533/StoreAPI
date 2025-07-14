@@ -37,7 +37,7 @@ namespace StoreAPI.IntegrationTests.Shared
             {
                 var guid = Guid.NewGuid();
                 username = $"testuser{guid.ToString().Substring(0, 12)}";
-                email = $"testuser+{guid}@example.com";
+                email = $"testuser+{guid.ToString()}@example.com";
 
                 // Check if a user with the same username or email already exists
                 userExists = await context.User.AnyAsync(u => u.Username == username || u.Email == email);
@@ -57,6 +57,73 @@ namespace StoreAPI.IntegrationTests.Shared
             await context.SaveChangesAsync();
 
             return testUser;
+        }
+
+        public async Task<Company> CreateTestCompanyAsync()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+
+            var name = string.Empty;
+            var address = string.Empty;
+            var phone = string.Empty;
+            var companyExists = true;
+
+            while (companyExists)
+            {
+                var guid = Guid.NewGuid();
+                name = $"testcompany{guid.ToString()}";
+                address = $"testcompanyaddress+{guid.ToString()}@example.com";
+                phone = $"+389{Random.Shared.Next(0, 10)}{Random.Shared.Next(10000000, 99999999)}";
+
+                // Check if a company with the same name, address or phone already exists
+                companyExists = await context.Company.AnyAsync(u => u.Name == name || u.Address == address || u.Phone == phone);
+            }
+
+            var testCompany = new Company
+            {
+                Name = name,
+                Address = address,
+                Phone = phone
+            };
+
+            context.Company.Add(testCompany);
+            await context.SaveChangesAsync();
+
+            return testCompany;
+        }
+
+        public async Task<Product> CreateTestProductAsync(int companyId)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+
+            var registrationNumber = string.Empty;
+            var name = string.Empty;
+            var productExists = true;
+
+            while (productExists)
+            {
+                var guid = Guid.NewGuid();
+                registrationNumber = new Random().Next(1000000, 9999999).ToString();
+                name = $"testcompany{guid.ToString()}";
+
+                // Check if a product with the same name, registrationNumber already exists
+                productExists = await context.Product.AnyAsync(u => u.Name == name || u.RegistrationNumber == registrationNumber);
+            }
+
+            var testProduct = new Product
+            {
+                RegistrationNumber = registrationNumber,
+                Name = name,
+                CompanyId = companyId,
+                Price = 10
+            };
+
+            context.Product.Add(testProduct);
+            await context.SaveChangesAsync();
+
+            return testProduct;
         }
     }
 }
