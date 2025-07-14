@@ -7,6 +7,7 @@ using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
+using Microsoft.EntityFrameworkCore;
 
 public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -40,6 +41,8 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+        (await context.User.AnyAsync(c => c.Id == userToRemove.Id)).Should().BeFalse();
 
         //Clean up
         context.User.Remove(adminUser);

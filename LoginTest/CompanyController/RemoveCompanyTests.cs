@@ -7,6 +7,7 @@ using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
+using Microsoft.EntityFrameworkCore;
 
 public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -40,6 +41,8 @@ public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplication
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+        (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeFalse();
 
         //Clean up
         context.User.Remove(testUser);
@@ -95,6 +98,8 @@ public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplication
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeTrue();
 
         //Clean up
         context.Product.Remove(testProduct);
