@@ -49,7 +49,6 @@ public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicati
         result.Should().NotBeNull();
         result.Items.Should().NotBeNull();
         result.Items.Count.Should().BeGreaterThanOrEqualTo(3); //should contain at least the three created users
-        //TODO create TEST  database
 
         //Clean up
         context.User.Remove(testUser);
