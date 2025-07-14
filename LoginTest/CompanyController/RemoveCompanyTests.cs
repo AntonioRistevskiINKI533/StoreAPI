@@ -94,7 +94,7 @@ public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplication
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
         //Clean up
         context.Product.Remove(testProduct);

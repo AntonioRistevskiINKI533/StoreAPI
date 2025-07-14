@@ -144,7 +144,7 @@ namespace StoreAPI.Services
 
             if (product != null)
             {
-                throw new Exception("Company has products, please delete them first");
+                throw new InvalidOperationException("Company has products, please delete them first");
             }
 
             await _companyRepository.Remove(company);

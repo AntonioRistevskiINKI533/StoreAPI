@@ -97,6 +97,10 @@ namespace StoreAPI.Controllers
 
                 return Ok();
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
                 return NotFound(ex.Message);
