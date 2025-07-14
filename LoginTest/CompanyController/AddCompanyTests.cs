@@ -11,13 +11,13 @@ using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 
-public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
     private readonly HelperService _helperService;
 
-    public AddUserIntegrationTests(CustomWebApplicationFactory factory)
+    public AddCompanyIntegrationTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
@@ -25,26 +25,23 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
     }
 
     [Fact]
-    public async Task AddUser_WithAdminTokenAndValidData_ShouldReturnOk()
+    public async Task AddCompany_WithValidData_ShouldReturnOk()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var adminUser = await _helperService.CreateTestUserAsync(true);
-        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
+        var testUser = await _helperService.CreateTestUserAsync();
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddUserRequest
+        var addRequest = new AddCompanyRequest
         {
-            Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
-            RoleId = (int)RoleEnum.Employee,
-            Password = "Pa$$w0rd!"
+            Name = "newcompany",
+            Address = "newcompanyaddress",
+            Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
         {
             Content = JsonContent.Create(addRequest)
         };
@@ -54,89 +51,38 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        var addedUser = await context.User.FirstOrDefaultAsync(u => u.Username == addRequest.Username);
-        addedUser.Should().NotBeNull();
-        addedUser.Username.Should().Be(addRequest.Username);
-        addedUser.Email.Should().Be(addRequest.Email);
-        addedUser.Name.Should().Be(addRequest.Name);
-        addedUser.Surname.Should().Be(addRequest.Surname);
-        addedUser.RoleId.Should().Be(addRequest.RoleId);
-
-        var loginRequest = new LoginRequest
-        {
-            Username = addedUser.Username,
-            Password = addRequest.Password
-        };
-
-        //Test if user can log in with the created credentials
-        var loginResponse = await _client.PostAsJsonAsync("/User/Login", loginRequest);
-
-        loginResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        var addedCompany = await context.Company.FirstOrDefaultAsync(u => u.Name == addRequest.Name);
+        addedCompany.Should().NotBeNull();
+        addedCompany.Name.Should().Be(addRequest.Name);
+        addedCompany.Address.Should().Be(addRequest.Address);
+        addedCompany.Phone.Should().Be(addRequest.Phone);
 
         //Clean up
-        context.User.Remove(adminUser);
-        context.User.Remove(addedUser!);
+        context.Company.Remove(addedCompany);
+        context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddUser_WithEmployeeToken_ShouldReturnForbidden()
+    public async Task AddCompany_WithExistingName_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var employeeUser = await _helperService.CreateTestUserAsync(isAdmin: false);
-        var token = tokenService.GenerateToken(employeeUser.Id, ((RoleEnum)employeeUser.RoleId).ToString());
+        var testUser = await _helperService.CreateTestUserAsync();
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddUserRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var addRequest = new AddCompanyRequest
         {
-            Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
-            RoleId = (int)RoleEnum.Employee,
-            Password = "Pa$$w0rd!"
+            Name = testCompany.Name,
+            Address = "newcompanyaddress",
+            Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
-        {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
-
-        //Clean up
-        context.User.Remove(employeeUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task AddUser_WithExistingUsername_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var adminUser = await _helperService.CreateTestUserAsync(true);
-        var existingUser = await _helperService.CreateTestUserAsync();
-
-        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
-
-        var addRequest = new AddUserRequest
-        {
-            Username = existingUser.Username, //duplicate username
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
-            RoleId = (int)RoleEnum.Employee,
-            Password = "Pa$$w0rd!"
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
         {
             Content = JsonContent.Create(addRequest)
         };
@@ -147,12 +93,12 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
         //Clean up
-        context.User.Remove(adminUser);
-        context.User.Remove(existingUser);
+        context.Company.Remove(testCompany);
+        context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
-    [Fact]
+    /*[Fact]
     public async Task AddUser_WithExistingEmail_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
@@ -503,5 +449,5 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
-    }
+    }*/
 }
