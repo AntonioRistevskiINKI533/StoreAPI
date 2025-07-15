@@ -11,13 +11,13 @@ using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 
-public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
     private readonly HelperService _helperService;
 
-    public AddCompanyIntegrationTests(CustomWebApplicationFactory factory)
+    public UpdateCompanyIntegrationTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
@@ -25,7 +25,7 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
     }
 
     [Fact]
-    public async Task AddCompany_WithValidData_ShouldReturnOk()
+    public async Task UpdateCompany_WithValidData_ShouldReturnOk()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -34,17 +34,19 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        //maybe i should make update also a separate function like create
-        var addRequest = new AddCompanyRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "newcompany",
             Address = "newcompanyaddress",
             Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
@@ -52,20 +54,20 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        var addedCompany = await context.Company.FirstOrDefaultAsync(u => u.Name == addRequest.Name);
-        addedCompany.Should().NotBeNull();
-        addedCompany.Name.Should().Be(addRequest.Name);
-        addedCompany.Address.Should().Be(addRequest.Address);
-        addedCompany.Phone.Should().Be(addRequest.Phone);
+        var updatedCompany = await context.Company.FirstOrDefaultAsync(u => u.Id == updateRequest.Id);
+        updatedCompany.Should().NotBeNull();
+        updatedCompany.Name.Should().Be(updateRequest.Name);
+        updatedCompany.Address.Should().Be(updateRequest.Address);
+        updatedCompany.Phone.Should().Be(updateRequest.Phone);
 
         //Clean up
-        context.Company.Remove(addedCompany);
+        context.Company.Remove(updatedCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddCompany_WithExistingName_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithExistingName_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -76,31 +78,36 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var addRequest = new AddCompanyRequest
+        var existingCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
-            Name = testCompany.Name,
+            Id = testCompany.Id,
+            Name = existingCompany.Name,
             Address = "newcompanyaddress",
             Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
         context.Company.Remove(testCompany);
+        context.Company.Remove(existingCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddCompany_WithExistingAddress_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithExistingAddress_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -111,31 +118,36 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var addRequest = new AddCompanyRequest
+        var existingCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "newcompany",
-            Address = testCompany.Address,
+            Address = existingCompany.Address,
             Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
         context.Company.Remove(testCompany);
+        context.Company.Remove(existingCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddCompany_WithExistingPhone_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithExistingPhone_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -146,31 +158,36 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var addRequest = new AddCompanyRequest
+        var existingCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "newcompany",
             Address = "newcompanyaddress",
-            Phone = testCompany.Phone
+            Phone = existingCompany.Phone
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
         context.Company.Remove(testCompany);
+        context.Company.Remove(existingCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddUser_WithInvalidPhoneFormat_ShouldReturnBadRequest()
+    public async Task UpdateUser_WithInvalidPhoneFormat_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -179,30 +196,35 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddCompanyRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "newcompany",
             Address = "newcompanyaddress",
             Phone = "abc"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
+        context.Company.Remove(testCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddUser_WithNameTooShort_ShouldReturnBadRequest()
+    public async Task UpdateUser_WithNameTooShort_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -211,30 +233,35 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddCompanyRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "",
             Address = "newcompanyaddress",
-            Phone = "+389077123123" //invalid phone
+            Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
+        context.Company.Remove(testCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddUser_WithNameTooLong_ShouldReturnBadRequest()
+    public async Task UpdateUser_WithNameTooLong_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -243,30 +270,35 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddCompanyRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = new string('A', 501),
             Address = "newcompanyaddress",
             Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
+        context.Company.Remove(testCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddUser_WithAddressTooShort_ShouldReturnBadRequest()
+    public async Task UpdateUser_WithAddressTooShort_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -275,30 +307,35 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddCompanyRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "newcompany",
-            Address = "abcd",
+            Address = "",
             Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
+        context.Company.Remove(testCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
 
     [Fact]
-    public async Task AddUser_WithAddressTooLong_ShouldReturnBadRequest()
+    public async Task UpdateUser_WithAddressTooLong_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -307,24 +344,29 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var addRequest = new AddCompanyRequest
+        var testCompany = await _helperService.CreateTestCompanyAsync();
+
+        var updateRequest = new UpdateCompanyRequest
         {
+            Id = testCompany.Id,
             Name = "newcompany",
             Address = new string('A', 21),
             Phone = "+389077123123"
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
         {
-            Content = JsonContent.Create(addRequest)
+            Content = JsonContent.Create(updateRequest)
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        //TODO maybe it hould relly return Conflict instead of badRequest
 
         //Clean up
+        context.Company.Remove(testCompany);
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
     }
