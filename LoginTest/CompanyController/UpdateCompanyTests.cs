@@ -39,8 +39,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "newcompany",
-            Address = "newcompanyaddress",
+            Name = "updatedcompany",
+            Address = "updatedcompanyaddress",
             Phone = "+389077123123"
         };
 
@@ -84,7 +84,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         {
             Id = testCompany.Id,
             Name = existingCompany.Name,
-            Address = "newcompanyaddress",
+            Address = "updatedcompanyaddress",
             Phone = "+389077123123"
         };
 
@@ -123,7 +123,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "newcompany",
+            Name = "updatedcompany",
             Address = existingCompany.Address,
             Phone = "+389077123123"
         };
@@ -163,8 +163,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "newcompany",
-            Address = "newcompanyaddress",
+            Name = "updatedcompany",
+            Address = "updatedcompanyaddress",
             Phone = existingCompany.Phone
         };
 
@@ -201,8 +201,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "newcompany",
-            Address = "newcompanyaddress",
+            Name = "updatedcompany",
+            Address = "updatedcompanyaddress",
             Phone = "abc"
         };
 
@@ -239,7 +239,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         {
             Id = testCompany.Id,
             Name = "",
-            Address = "newcompanyaddress",
+            Address = "updatedcompanyaddress",
             Phone = "+389077123123"
         };
 
@@ -276,7 +276,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         {
             Id = testCompany.Id,
             Name = new string('A', 501),
-            Address = "newcompanyaddress",
+            Address = "updatedcompanyaddress",
             Phone = "+389077123123"
         };
 
@@ -312,7 +312,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "newcompany",
+            Name = "updatedcompany",
             Address = "",
             Phone = "+389077123123"
         };
@@ -349,7 +349,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "newcompany",
+            Name = "updatedcompany",
             Address = new string('A', 21),
             Phone = "+389077123123"
         };
