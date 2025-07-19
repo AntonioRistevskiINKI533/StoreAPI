@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
+using System;
 
 public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -34,12 +35,11 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var testUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        //maybe i should make update also a separate function like create
         var addRequest = new AddCompanyRequest
         {
-            Name = "newcompany",
-            Address = "newcompanyaddress",
-            Phone = "+389077123123"
+            Name = _helperService.CreateRandomText(),
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -79,8 +79,8 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var addRequest = new AddCompanyRequest
         {
             Name = testCompany.Name,
-            Address = "newcompanyaddress",
-            Phone = "+389077123123"
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -91,7 +91,10 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company with same name already exists");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -113,9 +116,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var addRequest = new AddCompanyRequest
         {
-            Name = "newcompany",
+            Name = _helperService.CreateRandomText(),
             Address = testCompany.Address,
-            Phone = "+389077123123"
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -126,7 +129,10 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company with same address already exists");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -148,8 +154,8 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var addRequest = new AddCompanyRequest
         {
-            Name = "newcompany",
-            Address = "newcompanyaddress",
+            Name = _helperService.CreateRandomText(),
+            Address = _helperService.CreateRandomText(),
             Phone = testCompany.Phone
         };
 
@@ -161,7 +167,10 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company with same phone already exists");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -181,8 +190,8 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var addRequest = new AddCompanyRequest
         {
-            Name = "newcompany",
-            Address = "newcompanyaddress",
+            Name = _helperService.CreateRandomText(),
+            Address = _helperService.CreateRandomText(),
             Phone = "abc"
         };
 
@@ -195,6 +204,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Invalid phone");
 
         //Clean up
         context.User.Remove(testUser);
@@ -214,8 +226,8 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var addRequest = new AddCompanyRequest
         {
             Name = "",
-            Address = "newcompanyaddress",
-            Phone = "+389077123123" //invalid phone
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -227,6 +239,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 500 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -246,8 +261,8 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var addRequest = new AddCompanyRequest
         {
             Name = new string('A', 501),
-            Address = "newcompanyaddress",
-            Phone = "+389077123123"
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -259,6 +274,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 500 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -277,9 +295,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var addRequest = new AddCompanyRequest
         {
-            Name = "newcompany",
+            Name = _helperService.CreateRandomText(),
             Address = "abcd",
-            Phone = "+389077123123"
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -291,6 +309,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Address must be between 5 and 200 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -309,9 +330,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         var addRequest = new AddCompanyRequest
         {
-            Name = "newcompany",
-            Address = new string('A', 21),
-            Phone = "+389077123123"
+            Name = _helperService.CreateRandomText(),
+            Address = new string('A', 201),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
@@ -323,6 +344,9 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Address must be between 5 and 200 characters");
 
         //Clean up
         context.User.Remove(testUser);

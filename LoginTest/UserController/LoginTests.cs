@@ -7,6 +7,7 @@ using System.Net.Http;
 using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Requests;
 using StoreAPI.IntegrationTests.Shared;
+using StoreAPI.Models.Responses;
 
 public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {

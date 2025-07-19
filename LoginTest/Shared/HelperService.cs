@@ -71,10 +71,9 @@ namespace StoreAPI.IntegrationTests.Shared
 
             while (companyExists)
             {
-                var guid = Guid.NewGuid();
-                name = $"testcompany{guid.ToString()}";
-                address = $"testcompanyaddress+{guid.ToString()}@example.com";
-                phone = $"+389{Random.Shared.Next(0, 10)}{Random.Shared.Next(10000000, 99999999)}";
+                name = CreateRandomText();
+                address = CreateRandomText();
+                phone = CreateRandomPhoneNumber();
 
                 // Check if a company with the same name, address or phone already exists
                 companyExists = await context.Company.AnyAsync(u => u.Name == name || u.Address == address || u.Phone == phone);
@@ -104,9 +103,8 @@ namespace StoreAPI.IntegrationTests.Shared
 
             while (productExists)
             {
-                var guid = Guid.NewGuid();
                 registrationNumber = new Random().Next(1000000, 9999999).ToString();
-                name = $"testcompany{guid.ToString()}";
+                name = CreateRandomText();
 
                 // Check if a product with the same name, registrationNumber already exists
                 productExists = await context.Product.AnyAsync(u => u.Name == name || u.RegistrationNumber == registrationNumber);
@@ -124,6 +122,16 @@ namespace StoreAPI.IntegrationTests.Shared
             await context.SaveChangesAsync();
 
             return testProduct;
+        }
+
+        public string CreateRandomPhoneNumber()
+        {
+            return $"+389{Random.Shared.Next(0, 10)}{Random.Shared.Next(10000000, 99999999)}";
+        }
+
+        public string CreateRandomText()
+        {
+            return $"randomtext{Guid.NewGuid().ToString()}";
         }
     }
 }
