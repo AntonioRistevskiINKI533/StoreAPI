@@ -79,6 +79,9 @@ public class GetCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company does not exist");
+
         //Cleanup
         context.User.Remove(testUser);
         await context.SaveChangesAsync();

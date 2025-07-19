@@ -9,13 +9,13 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 using Microsoft.EntityFrameworkCore;
 
-public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+public class RemoveCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;
     private readonly HelperService _helperService;
 
-    public RemoveComnpanyIntegrationTests(CustomWebApplicationFactory factory)
+    public RemoveCompanyIntegrationTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
@@ -72,6 +72,9 @@ public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplication
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company does not exist");
+
         //Clean up
         context.User.Remove(testUser);
         await context.SaveChangesAsync();
@@ -97,7 +100,10 @@ public class RemoveComnpanyIntegrationTests : IClassFixture<CustomWebApplication
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company has products, please delete them first");
 
         (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeTrue();
 

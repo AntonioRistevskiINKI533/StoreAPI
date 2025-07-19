@@ -99,7 +99,7 @@ namespace StoreAPI.Services
 
             if (company == null)
             {
-                throw new Exception("Company does not exist");
+                throw new NotFoundException("Company does not exist");
             }
 
             return new CompanyData

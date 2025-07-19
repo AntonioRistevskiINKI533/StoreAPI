@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
+using System;
+using System.Text.Json;
+using StoreAPI.IntegrationTests.Shared.Responses;
 
 public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -36,12 +39,13 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
 
         var testCompany = await _helperService.CreateTestCompanyAsync();
 
+        var guid = Guid.NewGuid();
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "updatedcompany",
-            Address = "updatedcompanyaddress",
-            Phone = "+389077123123"
+            Name = _helperService.CreateRandomText(),
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -84,8 +88,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         {
             Id = testCompany.Id,
             Name = existingCompany.Name,
-            Address = "updatedcompanyaddress",
-            Phone = "+389077123123"
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -96,8 +100,10 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company with same name already exists");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -123,9 +129,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "updatedcompany",
+            Name = _helperService.CreateRandomText(),
             Address = existingCompany.Address,
-            Phone = "+389077123123"
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -136,8 +142,10 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company with same address already exists");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -163,8 +171,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "updatedcompany",
-            Address = "updatedcompanyaddress",
+            Name = _helperService.CreateRandomText(),
+            Address = _helperService.CreateRandomText(),
             Phone = existingCompany.Phone
         };
 
@@ -176,8 +184,10 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Company with same phone already exists");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -187,7 +197,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task UpdateUser_WithInvalidPhoneFormat_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithInvalidPhoneFormat_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -201,8 +211,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "updatedcompany",
-            Address = "updatedcompanyaddress",
+            Name = _helperService.CreateRandomText(),
+            Address = _helperService.CreateRandomText(),
             Phone = "abc"
         };
 
@@ -215,7 +225,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Invalid phone");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -224,7 +236,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task UpdateUser_WithNameTooShort_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithNameTooShort_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -239,8 +251,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         {
             Id = testCompany.Id,
             Name = "",
-            Address = "updatedcompanyaddress",
-            Phone = "+389077123123"
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -252,7 +264,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 500 characters");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -261,7 +275,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task UpdateUser_WithNameTooLong_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithNameTooLong_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -276,8 +290,8 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         {
             Id = testCompany.Id,
             Name = new string('A', 501),
-            Address = "updatedcompanyaddress",
-            Phone = "+389077123123"
+            Address = _helperService.CreateRandomText(),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -289,7 +303,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 500 characters");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -298,7 +314,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task UpdateUser_WithAddressTooShort_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithAddressTooShort_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -312,9 +328,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "updatedcompany",
+            Name = _helperService.CreateRandomText(),
             Address = "",
-            Phone = "+389077123123"
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -326,7 +342,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Address must be between 5 and 200 characters");
 
         //Clean up
         context.Company.Remove(testCompany);
@@ -335,7 +353,7 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task UpdateUser_WithAddressTooLong_ShouldReturnBadRequest()
+    public async Task UpdateCompany_WithAddressTooLong_ShouldReturnBadRequest()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -349,9 +367,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var updateRequest = new UpdateCompanyRequest
         {
             Id = testCompany.Id,
-            Name = "updatedcompany",
-            Address = new string('A', 21),
-            Phone = "+389077123123"
+            Name = _helperService.CreateRandomText(),
+            Address = new string('A', 201),
+            Phone = _helperService.CreateRandomPhoneNumber()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
@@ -363,7 +381,9 @@ public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-        //TODO maybe it hould relly return Conflict instead of badRequest
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Address must be between 5 and 200 characters");
 
         //Clean up
         context.Company.Remove(testCompany);
