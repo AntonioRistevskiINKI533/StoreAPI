@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using StoreAPI.Models.Requests;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using StoreAPI.Exceptions;
 
 namespace StoreAPI.Controllers
 {
@@ -32,9 +33,13 @@ namespace StoreAPI.Controllers
 
                 return Ok();
             }
+            catch (ConflictException ex)
+            {
+                return Conflict(ex.Message);
+            }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
@@ -47,6 +52,14 @@ namespace StoreAPI.Controllers
                 await _companyService.UpdateCompany(request);
 
                 return Ok();
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(ex.Message);
             }
             catch (Exception ex)
             {
@@ -64,9 +77,13 @@ namespace StoreAPI.Controllers
 
                 return Ok(company);
             }
-            catch (Exception ex)
+            catch (NotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
             }
         }
 
@@ -83,7 +100,7 @@ namespace StoreAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return Problem(ex.Message);
             }
         }
 
@@ -99,11 +116,15 @@ namespace StoreAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return Problem(ex.Message);
             }
         }
     }

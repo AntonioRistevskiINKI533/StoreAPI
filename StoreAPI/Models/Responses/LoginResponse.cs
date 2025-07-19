@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-namespace StoreAPI.Models.Requests
+namespace StoreAPI.Models.Responses
 {
     public class LoginResponse
     {

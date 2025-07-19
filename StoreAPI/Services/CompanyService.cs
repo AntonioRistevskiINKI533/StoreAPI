@@ -6,6 +6,7 @@ using StoreAPI.Models.Requests;
 using StoreAPI.Models;
 using BCrypt.Net;
 using StoreAPI.Enums;
+using StoreAPI.Exceptions;
 
 namespace StoreAPI.Services
 {
@@ -28,17 +29,17 @@ namespace StoreAPI.Services
             {
                 if (company.Name == request.Name)
                 {
-                    throw new Exception("Company with same name already exists");
+                    throw new ConflictException("Company with same name already exists");
                 }
 
                 if (company.Address == request.Address)
                 {
-                    throw new Exception("Company with same address already exists");
+                    throw new ConflictException("Company with same address already exists");
                 }
 
                 if (company.Phone == request.Phone)
                 {
-                    throw new Exception("Company with same phone already exists");
+                    throw new ConflictException("Company with same phone already exists");
                 }
             }
 
@@ -60,7 +61,7 @@ namespace StoreAPI.Services
 
             if (company == null)
             {
-                throw new Exception("Company does not exist");
+                throw new NotFoundException("Company does not exist");
             }
 
             var existingCompany = await _companyRepository.GetByNameAddressOrPhone(request.Name, request.Address, request.Phone, request.Id);
@@ -69,17 +70,17 @@ namespace StoreAPI.Services
             {
                 if (existingCompany.Name == request.Name)
                 {
-                    throw new Exception("Company with same name already exists");
+                    throw new ConflictException("Company with same name already exists");
                 }
 
                 if (existingCompany.Address == request.Address)
                 {
-                    throw new Exception("Company with same address already exists");
+                    throw new ConflictException("Company with same address already exists");
                 }
 
                 if (existingCompany.Phone == request.Phone)
                 {
-                    throw new Exception("Company with same phone already exists");
+                    throw new ConflictException("Company with same phone already exists");
                 }
             }
 
@@ -137,7 +138,7 @@ namespace StoreAPI.Services
 
             if (company == null)
             {
-                throw new Exception("Company does not exist");
+                throw new NotFoundException("Company does not exist");
             }
 
             var product = await _productRepository.GetByCompanyId(companyId);

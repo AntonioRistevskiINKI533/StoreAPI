@@ -6,6 +6,8 @@ using StoreAPI.Models.Requests;
 using StoreAPI.Models;
 using BCrypt.Net;
 using StoreAPI.Enums;
+using StoreAPI.Models.Responses;
+using StoreAPI.Exceptions;
 
 namespace StoreAPI.Services
 {
@@ -50,7 +52,7 @@ namespace StoreAPI.Services
 
             if (user == null)
             {
-                throw new Exception("User does not exist");
+                throw new NotFoundException("User does not exist");
             }
 
             return new UserData
@@ -70,7 +72,7 @@ namespace StoreAPI.Services
 
             if (user == null)
             {
-                throw new Exception("User does not exist");
+                throw new NotFoundException("User does not exist");
             }
 
             var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email, user.Id);
@@ -79,12 +81,12 @@ namespace StoreAPI.Services
             {
                 if (existingUser.Username == request.Username)
                 {
-                    throw new Exception("User with same username already exists");
+                    throw new ConflictException("User with same username already exists");
                 }
 
                 if (existingUser.Email == request.Email)
                 {
-                    throw new Exception("User with same email already exists");
+                    throw new ConflictException("User with same email already exists");
                 }
             }
 
@@ -106,12 +108,12 @@ namespace StoreAPI.Services
             {
                 if (user.Username == request.Username)
                 {
-                    throw new Exception("User with same username already exists");
+                    throw new ConflictException("User with same username already exists");
                 }
 
                 if (user.Email == request.Email)
                 {
-                    throw new Exception("User with same email already exists");
+                    throw new ConflictException("User with same email already exists");
                 }
             }
 
@@ -136,7 +138,7 @@ namespace StoreAPI.Services
 
             if (user == null)
             {
-                throw new Exception("User does not exist");
+                throw new NotFoundException("User does not exist");
             }
 
             var existingUser = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email, user.Id);
@@ -145,12 +147,12 @@ namespace StoreAPI.Services
             {
                 if (existingUser.Username == request.Username)
                 {
-                    throw new Exception("User with same username already exists");
+                    throw new ConflictException("User with same username already exists");
                 }
 
                 if (existingUser.Email == request.Email)
                 {
-                    throw new Exception("User with same email already exists");
+                    throw new ConflictException("User with same email already exists");
                 }
             }
 
@@ -171,7 +173,7 @@ namespace StoreAPI.Services
 
             if (user == null)
             {
-                throw new Exception("User does not exist");
+                throw new NotFoundException("User does not exist");
             }
 
             return new UserData
@@ -215,7 +217,7 @@ namespace StoreAPI.Services
 
             if (user == null)
             {
-                throw new Exception("User does not exist");
+                throw new NotFoundException("User does not exist");
             }
 
             await _userRepository.Remove(user);

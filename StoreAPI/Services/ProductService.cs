@@ -7,6 +7,7 @@ using StoreAPI.Models;
 using BCrypt.Net;
 using StoreAPI.Enums;
 using System.ComponentModel.Design;
+using StoreAPI.Exceptions;
 
 namespace StoreAPI.Services
 {
@@ -27,7 +28,7 @@ namespace StoreAPI.Services
 
             if (product != null)
             {
-                throw new Exception("Product with same name already exists");
+                throw new ConflictException("Product with same name already exists");
             }
 
             var regNumExists = true;
@@ -64,14 +65,14 @@ namespace StoreAPI.Services
 
             if (product == null)
             {
-                throw new Exception("Product does not exist");
+                throw new NotFoundException("Product does not exist");
             }
 
             var existingProduct = await _productRepository.GetByName(request.Name);
 
             if (existingProduct != null && existingProduct.Id != product.Id)
             {
-                throw new Exception("Product with same name already exists");
+                throw new ConflictException("Product with same name already exists");
             }
 
             product.Name = request.Name;
@@ -89,7 +90,7 @@ namespace StoreAPI.Services
 
             if (product == null)
             {
-                throw new Exception("Product does not exist");
+                throw new NotFoundException("Product does not exist");
             }
 
             return new ProductData
@@ -131,14 +132,14 @@ namespace StoreAPI.Services
 
             if (product == null)
             {
-                throw new Exception("Product does not exist");
+                throw new NotFoundException("Product does not exist");
             }
 
             var productSale = await _productSaleRepository.GetByProductId(productId);
 
             if (productSale != null)
             {
-                throw new Exception("Product has product sales, please delete them first");
+                throw new InvalidOperationException("Product has product sales, please delete them first");
             }
 
             await _productRepository.Remove(product);

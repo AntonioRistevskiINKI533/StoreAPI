@@ -6,6 +6,7 @@ using StoreAPI.Models.Requests;
 using StoreAPI.Models;
 using BCrypt.Net;
 using StoreAPI.Enums;
+using StoreAPI.Exceptions;
 
 namespace StoreAPI.Services
 {
@@ -30,7 +31,7 @@ namespace StoreAPI.Services
 
                 if (product == null)
                 {
-                    throw new Exception("Product does not exist");
+                    throw new NotFoundException("Product does not exist");
                 }
 
                 request.PricePerUnit = product.Price;
@@ -55,7 +56,7 @@ namespace StoreAPI.Services
 
             if (productSale == null)
             {
-                throw new Exception("Product sale does not exist");
+                throw new NotFoundException("Product sale does not exist");
             }
 
             productSale.ProductId = request.ProductId;
@@ -74,7 +75,7 @@ namespace StoreAPI.Services
 
             if (productSale == null)
             {
-                throw new Exception("Product sale does not exist");
+                throw new NotFoundException("Product sale does not exist");
             }
 
             return new ProductSaleData
@@ -116,7 +117,7 @@ namespace StoreAPI.Services
 
             if (productSale == null)
             {
-                throw new Exception("Product sale does not exist");
+                throw new NotFoundException("Product sale does not exist");
             }
 
             await _productSaleRepository.Remove(productSale);

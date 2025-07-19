@@ -17,7 +17,7 @@ namespace StoreAPI.Models.Requests
         public string Name { get; set; }
 
         [Required]
-        [StringLength(20, MinimumLength = 5, ErrorMessage = "Address must be between 5 and 200 characters")]
+        [StringLength(200, MinimumLength = 5, ErrorMessage = "Address must be between 5 and 200 characters")]
         public string Address { get; set; }
 
         [Required]
