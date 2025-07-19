@@ -36,10 +36,10 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var addRequest = new AddUserRequest
         {
-            Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Username = "newuser",//TODO
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -75,7 +75,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         //Clean up
         context.User.Remove(adminUser);
-        context.User.Remove(addedUser!);
+        context.User.Remove(addedUser);
         await context.SaveChangesAsync();
     }
 
@@ -86,15 +86,15 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
         var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var employeeUser = await _helperService.CreateTestUserAsync(isAdmin: false);
+        var employeeUser = await _helperService.CreateTestUserAsync();
         var token = tokenService.GenerateToken(employeeUser.Id, ((RoleEnum)employeeUser.RoleId).ToString());
 
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -129,9 +129,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = existingUser.Username, //duplicate username
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -144,7 +144,10 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User with same username already exists");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -168,8 +171,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         {
             Username = "newuser",
             Email = existingUser.Email, //duplicate email
-            Name = "NewName",
-            Surname = "NewSurname",
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -182,7 +185,10 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User with same email already exists");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -204,8 +210,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         {
             Username = "newuser",
             Email = "invalid-email", //invalid
-            Name = "NewName",
-            Surname = "NewSurname",
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -219,6 +225,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Invalid email");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -238,9 +247,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "short" //too short
         };
@@ -254,6 +263,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Password must be at least 8 characters");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -273,9 +285,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = 9999, //non-existent role
             Password = "Pa$$w0rd!"
         };
@@ -288,7 +300,10 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("Role does not exist");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -308,9 +323,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "abc", //too short (min length = 5)
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -324,6 +339,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Username must be between 5 and 20 characters");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -343,9 +361,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = new string('A', 21), //too long
-            Email = "newuser@example.com",
-            Name = "NewName",
-            Surname = "NewSurname",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -359,6 +377,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Username must be between 5 and 20 characters");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -378,9 +399,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
+            Email = _helperService.CreateRandomEmail(),
             Name = "",
-            Surname = "NewSurname",
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -394,6 +415,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -413,9 +437,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
+            Email = _helperService.CreateRandomEmail(),
             Name = new string('A', 101),
-            Surname = "NewSurname",
+            Surname = _helperService.CreateRandomText(),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
         };
@@ -429,6 +453,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -448,8 +475,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
             Surname = "",
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
@@ -464,6 +491,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Surname must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(adminUser);
@@ -483,8 +513,8 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var addRequest = new AddUserRequest
         {
             Username = "newuser",
-            Email = "newuser@example.com",
-            Name = "NewName",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
             Surname = new string('A', 101),
             RoleId = (int)RoleEnum.Employee,
             Password = "Pa$$w0rd!"
@@ -499,6 +529,9 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Surname must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(adminUser);

@@ -19,5 +19,10 @@ namespace StoreAPI.Repositories
 
             return items;
         }
+
+        public async Task<Role> GetById(int id)
+        {
+            return await _context.Role.Where(x => x.Id == id).FirstOrDefaultAsync();
+        }
     }
 }

@@ -14,11 +14,13 @@ namespace StoreAPI.Services
     public class UserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly TokenService _tokenService;
 
-        public UserService(IUserRepository userRepository, TokenService tokenService)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, TokenService tokenService)
         {
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
             _tokenService = tokenService;
         }
 
@@ -102,6 +104,13 @@ namespace StoreAPI.Services
 
         public async Task AddUser(AddUserRequest request)
         {
+            var role = await _roleRepository.GetById(request.RoleId);
+
+            if (role == null)
+            {
+                throw new NotFoundException("Role does not exist");
+            }
+
             var user = await _userRepository.GetByUsernameOrEmail(request.Username, request.Email);
 
             if (user != null)

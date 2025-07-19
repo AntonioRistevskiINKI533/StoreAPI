@@ -133,5 +133,10 @@ namespace StoreAPI.IntegrationTests.Shared
         {
             return $"randomtext{Guid.NewGuid().ToString()}";
         }
+
+        public string CreateRandomEmail()
+        {
+            return $"{Guid.NewGuid().ToString()}@gmail.com";
+        }
     }
 }
