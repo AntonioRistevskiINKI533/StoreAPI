@@ -10,82 +10,85 @@ using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 
-public class GetUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.UserControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public GetUserIntegrationTests(CustomWebApplicationFactory factory)
+    public class GetUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task GetUser_WithValidUserIdAndToken_ShouldReturnOk()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+        public GetUserIntegrationTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var adminUser = await _helperService.CreateTestUserAsync(true);
+        [Fact]
+        public async Task GetUser_WithValidUserIdAndToken_ShouldReturnOk()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var testUser = await _helperService.CreateTestUserAsync();
+            var adminUser = await _helperService.CreateTestUserAsync(true);
 
-        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetUser?userId={testUser.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetUser?userId={testUser.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            var response = await _client.SendAsync(request);
 
-        var userData = await response.Content.ReadFromJsonAsync<UserData>();
-        userData.Should().NotBeNull();
-        userData!.Id.Should().Be(testUser.Id);
-        userData.Username.Should().Be(testUser.Username);
-        userData.Email.Should().Be(testUser.Email);
-        userData.Name.Should().Be(testUser.Name);
-        userData.Surname.Should().Be(testUser.Surname);
-        userData.RoleId.Should().Be(testUser.RoleId);
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        //Cleanup
-        context.User.Remove(adminUser);
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var userData = await response.Content.ReadFromJsonAsync<UserData>();
+            userData.Should().NotBeNull();
+            userData!.Id.Should().Be(testUser.Id);
+            userData.Username.Should().Be(testUser.Username);
+            userData.Email.Should().Be(testUser.Email);
+            userData.Name.Should().Be(testUser.Name);
+            userData.Surname.Should().Be(testUser.Surname);
+            userData.RoleId.Should().Be(testUser.RoleId);
 
-    [Fact]
-    public async Task GetUser_WithNonExistentUserId_ShouldReturnNotFound()
-    {
-        using var scope = _factory.Services.CreateScope();
-        using var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            //Cleanup
+            context.User.Remove(adminUser);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var adminUser = await _helperService.CreateTestUserAsync(true);
+        [Fact]
+        public async Task GetUser_WithNonExistentUserId_ShouldReturnNotFound()
+        {
+            using var scope = _factory.Services.CreateScope();
+            using var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var testUser = await _helperService.CreateTestUserAsync();
+            var adminUser = await _helperService.CreateTestUserAsync(true);
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetUser?userId={testUser.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetUser?userId={testUser.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            var response = await _client.SendAsync(request);
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("User does not exist");
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
-        //Cleanup
-        context.User.Remove(adminUser);
-        await context.SaveChangesAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("User does not exist");
+
+            //Cleanup
+            context.User.Remove(adminUser);
+            await context.SaveChangesAsync();
+        }
     }
 }

@@ -9,78 +9,80 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
-using StoreAPI.Exceptions;
 
-public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.UserControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public GetUserProfileIntegrationTests(CustomWebApplicationFactory factory)
+    public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task GetUserProfile_WithValidToken_ShouldReturnUserProfile()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+        public GetUserProfileIntegrationTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task GetUserProfile_WithValidToken_ShouldReturnUserProfile()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var response = await _client.GetAsync("/User/GetUserProfile");
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            var response = await _client.GetAsync("/User/GetUserProfile");
 
-        var profile = await response.Content.ReadFromJsonAsync<UserData>();
-        profile.Should().NotBeNull();
-        profile!.Username.Should().Be(testUser.Username);
-        profile.Email.Should().Be(testUser.Email);
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        //Cleanup
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var profile = await response.Content.ReadFromJsonAsync<UserData>();
+            profile.Should().NotBeNull();
+            profile!.Username.Should().Be(testUser.Username);
+            profile.Email.Should().Be(testUser.Email);
 
-    [Fact]
-    public async Task GetUserProfile_WithoutToken_ShouldReturnUnauthorized()
-    {
-        var response = await _client.GetAsync("/User/GetUserProfile");
+            //Cleanup
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
-    }
+        [Fact]
+        public async Task GetUserProfile_WithoutToken_ShouldReturnUnauthorized()
+        {
+            var response = await _client.GetAsync("/User/GetUserProfile");
 
-    [Fact]
-    public async Task GetUserProfile_NonExistentUser_ShouldReturnUnauthorized()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task GetUserProfile_NonExistentUser_ShouldReturnUnauthorized()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        //User is removed to simulate non-existent user
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _client.GetAsync("/User/GetUserProfile");
+            //User is removed to simulate non-existent user
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            var response = await _client.GetAsync("/User/GetUserProfile");
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("User does not exist");
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("User does not exist");
+        }
     }
 }

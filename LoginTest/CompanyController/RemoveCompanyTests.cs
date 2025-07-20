@@ -9,110 +9,113 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 using Microsoft.EntityFrameworkCore;
 
-public class RemoveCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.CompanyControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public RemoveCompanyIntegrationTests(CustomWebApplicationFactory factory)
+    public class RemoveCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task RemoveCompany_WithValidCompanyIdAndDeletableCompany_ShouldReturnOk()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+        public RemoveCompanyIntegrationTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task RemoveCompany_WithValidCompanyIdAndDeletableCompany_ShouldReturnOk()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            var response = await _client.SendAsync(request);
 
-        (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeFalse();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeFalse();
 
-    [Fact]
-    public async Task RemoveCompany_WithNonExistentCompanyId_ShouldReturnNotFound()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task RemoveCompany_WithNonExistentCompanyId_ShouldReturnNotFound()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        context.Company.Remove(testCompany);
-        await context.SaveChangesAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            var response = await _client.SendAsync(request);
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("Company does not exist");
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company does not exist");
 
-    [Fact]
-    public async Task RemoveCompany_WithExistingProduct_ShouldReturnConflict()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task RemoveCompany_WithExistingProduct_ShouldReturnConflict()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
+            var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            var response = await _client.SendAsync(request);
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("Company has products, please delete them first");
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
 
-        (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeTrue();
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company has products, please delete them first");
 
-        //Clean up
-        context.Product.Remove(testProduct);
-        await context.SaveChangesAsync();
+            (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeTrue();
 
-        context.Company.Remove(testCompany);
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            //Clean up
+            context.Product.Remove(testProduct);
+            await context.SaveChangesAsync();
+
+            context.Company.Remove(testCompany);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
     }
 }

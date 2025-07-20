@@ -10,346 +10,348 @@ using Microsoft.EntityFrameworkCore;
 using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
-using System;
 
-public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.CompanyControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public AddCompanyIntegrationTests(CustomWebApplicationFactory factory)
+    public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task AddCompany_WithValidData_ShouldReturnOk()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var addRequest = new AddCompanyRequest
+        public AddCompanyIntegrationTests(CustomWebApplicationFactory factory)
         {
-            Name = _helperService.CreateRandomText(),
-            Address = _helperService.CreateRandomText(),
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+        [Fact]
+        public async Task AddCompany_WithValidData_ShouldReturnOk()
         {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            var addRequest = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = _helperService.CreateRandomText(),
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
 
-        var addedCompany = await context.Company.FirstOrDefaultAsync(u => u.Name == addRequest.Name);
-        addedCompany.Should().NotBeNull();
-        addedCompany.Name.Should().Be(addRequest.Name);
-        addedCompany.Address.Should().Be(addRequest.Address);
-        addedCompany.Phone.Should().Be(addRequest.Phone);
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.Company.Remove(addedCompany);
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task AddCompany_WithExistingName_ShouldReturnConflict()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var addedCompany = await context.Company.FirstOrDefaultAsync(u => u.Name == addRequest.Name);
+            addedCompany.Should().NotBeNull();
+            addedCompany.Name.Should().Be(addRequest.Name);
+            addedCompany.Address.Should().Be(addRequest.Address);
+            addedCompany.Phone.Should().Be(addRequest.Phone);
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            //Clean up
+            context.Company.Remove(addedCompany);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var addRequest = new AddCompanyRequest
+        [Fact]
+        public async Task AddCompany_WithExistingName_ShouldReturnConflict()
         {
-            Name = testCompany.Name,
-            Address = _helperService.CreateRandomText(),
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync();
+
+            var addRequest = new AddCompanyRequest
+            {
+                Name = testCompany.Name,
+                Address = _helperService.CreateRandomText(),
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company with same name already exists");
+
+            //Clean up
+            context.Company.Remove(testCompany);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddCompany_WithExistingAddress_ShouldReturnConflict()
         {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("Company with same name already exists");
+            var addRequest = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = testCompany.Address,
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
 
-        //Clean up
-        context.Company.Remove(testCompany);
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-    [Fact]
-    public async Task AddCompany_WithExistingAddress_ShouldReturnConflict()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            var response = await _client.SendAsync(request);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company with same address already exists");
 
-        var addRequest = new AddCompanyRequest
+            //Clean up
+            context.Company.Remove(testCompany);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddCompany_WithExistingPhone_ShouldReturnConflict()
         {
-            Name = _helperService.CreateRandomText(),
-            Address = testCompany.Address,
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync();
+
+            var addRequest = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = _helperService.CreateRandomText(),
+                Phone = testCompany.Phone
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company with same phone already exists");
+
+            //Clean up
+            context.Company.Remove(testCompany);
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddUser_WithInvalidPhoneFormat_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            var addRequest = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = _helperService.CreateRandomText(),
+                Phone = "abc"
+            };
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("Company with same address already exists");
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.Company.Remove(testCompany);
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task AddCompany_WithExistingPhone_ShouldReturnConflict()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Invalid phone");
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var addRequest = new AddCompanyRequest
+        [Fact]
+        public async Task AddUser_WithNameTooShort_ShouldReturnBadRequest()
         {
-            Name = _helperService.CreateRandomText(),
-            Address = _helperService.CreateRandomText(),
-            Phone = testCompany.Phone
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var addRequest = new AddCompanyRequest
+            {
+                Name = "",
+                Address = _helperService.CreateRandomText(),
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Name must be between 1 and 500 characters");
+
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddUser_WithNameTooLong_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            var addRequest = new AddCompanyRequest
+            {
+                Name = new string('A', 501),
+                Address = _helperService.CreateRandomText(),
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("Company with same phone already exists");
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.Company.Remove(testCompany);
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task AddUser_WithInvalidPhoneFormat_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Name must be between 1 and 500 characters");
 
-        var addRequest = new AddCompanyRequest
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddUser_WithAddressTooShort_ShouldReturnBadRequest()
         {
-            Name = _helperService.CreateRandomText(),
-            Address = _helperService.CreateRandomText(),
-            Phone = "abc"
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var addRequest = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = "abcd",
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Address must be between 5 and 200 characters");
+
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddUser_WithAddressTooLong_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            var addRequest = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = new string('A', 201),
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Invalid phone");
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task AddUser_WithNameTooShort_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Address must be between 5 and 200 characters");
 
-        var addRequest = new AddCompanyRequest
-        {
-            Name = "",
-            Address = _helperService.CreateRandomText(),
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
-        {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Name must be between 1 and 500 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task AddUser_WithNameTooLong_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var addRequest = new AddCompanyRequest
-        {
-            Name = new string('A', 501),
-            Address = _helperService.CreateRandomText(),
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
-        {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Name must be between 1 and 500 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task AddUser_WithAddressTooShort_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var addRequest = new AddCompanyRequest
-        {
-            Name = _helperService.CreateRandomText(),
-            Address = "abcd",
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
-        {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Address must be between 5 and 200 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task AddUser_WithAddressTooLong_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var addRequest = new AddCompanyRequest
-        {
-            Name = _helperService.CreateRandomText(),
-            Address = new string('A', 201),
-            Phone = _helperService.CreateRandomPhoneNumber()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
-        {
-            Content = JsonContent.Create(addRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Address must be between 5 and 200 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
     }
 }

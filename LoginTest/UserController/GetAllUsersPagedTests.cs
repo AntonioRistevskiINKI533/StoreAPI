@@ -6,111 +6,113 @@ using Microsoft.Extensions.DependencyInjection;
 using StoreAPI.Services;
 using System.Net.Http;
 using StoreAPI.Models.Contexts;
-using StoreAPI.Models.Requests;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
 
-public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.UserControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public GetAllUsersPagedIntegrationTests(CustomWebApplicationFactory factory)
+    public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task GetAllUsersPaged_WithValidToken_ShouldReturnOkAndPagedResult()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+        public GetAllUsersPagedIntegrationTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+        [Fact]
+        public async Task GetAllUsersPaged_WithValidToken_ShouldReturnOkAndPagedResult()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var anotherUser1 = await _helperService.CreateTestUserAsync();
-        var anotherUser2 = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/User/GetAllUsersPaged?pageIndex=0&pageSize=10");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var anotherUser1 = await _helperService.CreateTestUserAsync();
+            var anotherUser2 = await _helperService.CreateTestUserAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, "/User/GetAllUsersPaged?pageIndex=0&pageSize=10");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var response = await _client.SendAsync(request);
 
-        var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
-        result.Should().NotBeNull();
-        result.Items.Should().NotBeNull();
-        result.Items.Count.Should().BeGreaterThanOrEqualTo(3); //should contain at least the three created users
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        //Clean up
-        context.User.Remove(testUser);
-        context.User.Remove(anotherUser1);
-        context.User.Remove(anotherUser2);
-        await context.SaveChangesAsync();
-    }
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().BeGreaterThanOrEqualTo(3); //should contain at least the three created users
 
-    [Fact]
-    public async Task GetAllUsersPaged_WithFullNameFilter_ShouldReturnFilteredResults()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            //Clean up
+            context.User.Remove(testUser);
+            context.User.Remove(anotherUser1);
+            context.User.Remove(anotherUser2);
+            await context.SaveChangesAsync();
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        await context.SaveChangesAsync();
+        [Fact]
+        public async Task GetAllUsersPaged_WithFullNameFilter_ShouldReturnFilteredResults()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
+            await context.SaveChangesAsync();
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&fullName={testUser.Name}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&fullName={testUser.Name}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var response = await _client.SendAsync(request);
 
-        var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
-        result.Should().NotBeNull();
-        result!.Items.Should().Contain(u => u.Name == testUser.Name);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
+            result.Should().NotBeNull();
+            result!.Items.Should().Contain(u => u.Name == testUser.Name);
 
-    [Fact]
-    public async Task GetAllUsersPaged_WithRoleIdFilter_ShouldReturnFilteredResults()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var adminUser = await _helperService.CreateTestUserAsync(true);
-        var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
+        [Fact]
+        public async Task GetAllUsersPaged_WithRoleIdFilter_ShouldReturnFilteredResults()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var employeeUser = await _helperService.CreateTestUserAsync();
+            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&roleId={(int)RoleEnum.Employee}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var employeeUser = await _helperService.CreateTestUserAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&roleId={(int)RoleEnum.Employee}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var response = await _client.SendAsync(request);
 
-        var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
-        result.Should().NotBeNull();
-        result!.Items.Should().Contain(u => u.Id == employeeUser.Id);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        //Clean up
-        context.User.Remove(adminUser);
-        context.User.Remove(employeeUser);
-        await context.SaveChangesAsync();
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
+            result.Should().NotBeNull();
+            result!.Items.Should().Contain(u => u.Id == employeeUser.Id);
+
+            //Clean up
+            context.User.Remove(adminUser);
+            context.User.Remove(employeeUser);
+            await context.SaveChangesAsync();
+        }
     }
 }

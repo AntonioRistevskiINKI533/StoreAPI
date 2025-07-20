@@ -10,80 +10,83 @@ using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 
-public class GetCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.CompanyControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public GetCompanyIntegrationTests(CustomWebApplicationFactory factory)
+    public class GetCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task GetCompany_WithValidCompanyIdAndToken_ShouldReturnOk()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+        public GetCompanyIntegrationTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task GetCompany_WithValidCompanyIdAndToken_ShouldReturnOk()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetCompany?companyId={testCompany.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetCompany?companyId={testCompany.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            var response = await _client.SendAsync(request);
 
-        var companyData = await response.Content.ReadFromJsonAsync<CompanyData>();
-        companyData.Should().NotBeNull();
-        companyData!.Id.Should().Be(testCompany.Id);
-        companyData.Name.Should().Be(testCompany.Name);
-        companyData.Address.Should().Be(testCompany.Address);
-        companyData.Phone.Should().Be(testCompany.Phone);
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        //Cleanup
-        context.User.Remove(testUser);
-        context.Company.Remove(testCompany);
-        await context.SaveChangesAsync();
-    }
+            var companyData = await response.Content.ReadFromJsonAsync<CompanyData>();
+            companyData.Should().NotBeNull();
+            companyData!.Id.Should().Be(testCompany.Id);
+            companyData.Name.Should().Be(testCompany.Name);
+            companyData.Address.Should().Be(testCompany.Address);
+            companyData.Phone.Should().Be(testCompany.Phone);
 
-    [Fact]
-    public async Task GetCompany_WithNonExistentCompanyId_ShouldReturnNotFound()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            //Cleanup
+            context.User.Remove(testUser);
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
+        }
 
-        var testUser = await _helperService.CreateTestUserAsync();
+        [Fact]
+        public async Task GetCompany_WithNonExistentCompanyId_ShouldReturnNotFound()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        var testCompany = await _helperService.CreateTestCompanyAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        context.Company.Remove(testCompany);
-        await context.SaveChangesAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync();
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetCompany?companyId={testCompany.Id}");
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
 
-        var response = await _client.SendAsync(request);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetCompany?companyId={testCompany.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            var response = await _client.SendAsync(request);
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("Company does not exist");
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
-        //Cleanup
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company does not exist");
+
+            //Cleanup
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
     }
 }

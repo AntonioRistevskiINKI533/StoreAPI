@@ -10,442 +10,445 @@ using StoreAPI.Models.Requests;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 
-public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+namespace StoreAPI.IntegrationTests.UserControllers
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HelperService _helperService;
-
-    public UpdateUserProfileIntegrationTests(CustomWebApplicationFactory factory)
+    public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _helperService = new HelperService(_factory);
-    }
+        private readonly HttpClient _client;
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HelperService _helperService;
 
-    [Fact]
-    public async Task UpdateUserProfile_WithValidTokenAndData_ShouldReturnOk()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var updateRequest = new UpdateUserProfileRequest
+        public UpdateUserProfileIntegrationTests(CustomWebApplicationFactory factory)
         {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            _factory = factory;
+            _client = factory.CreateClient();
+            _helperService = new HelperService(_factory);
+        }
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+        [Fact]
+        public async Task UpdateUserProfile_WithValidTokenAndData_ShouldReturnOk()
         {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var updatedUser = await context.User.FindAsync(testUser.Id);
-        updatedUser.Should().NotBeNull();
-        updatedUser.Username.Should().Be(updateRequest.Username);
-        updatedUser.Email.Should().Be(updateRequest.Email);
-        updatedUser.Name.Should().Be(updateRequest.Name);
-        updatedUser.Surname.Should().Be(updateRequest.Surname);
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
 
-        //Clean up
-        context.User.Remove(updatedUser);
-        await context.SaveChangesAsync();
-    }
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-    [Fact]
-    public async Task UpdateUserProfile_WithNonExistentUserId_ShouldReturnNotFound()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            var response = await _client.SendAsync(request);
 
-        var testUser = await _helperService.CreateTestUserAsync();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            var updatedUser = await context.User.FindAsync(testUser.Id);
+            updatedUser.Should().NotBeNull();
+            updatedUser.Username.Should().Be(updateRequest.Username);
+            updatedUser.Email.Should().Be(updateRequest.Email);
+            updatedUser.Name.Should().Be(updateRequest.Name);
+            updatedUser.Surname.Should().Be(updateRequest.Surname);
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            //Clean up
+            context.User.Remove(updatedUser);
+            await context.SaveChangesAsync();
+        }
 
-        var updateRequest = new UpdateUserProfileRequest
+        [Fact]
+        public async Task UpdateUserProfile_WithNonExistentUserId_ShouldReturnNotFound()
         {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("User does not exist");
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithoutToken_ShouldReturnUnauthorized()
         {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
 
-        var response = await _client.SendAsync(request);
+            var response = await _client.PutAsJsonAsync("/User/UpdateUserProfile", updateRequest);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        }
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("User does not exist");
-    }
-
-    [Fact]
-    public async Task UpdateUserProfile_WithoutToken_ShouldReturnUnauthorized()
-    {
-        var updateRequest = new UpdateUserProfileRequest
+        [Fact]
+        public async Task UpdateUserProfile_WithExistingUsername_ShouldReturnConflict()
         {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.PutAsJsonAsync("/User/UpdateUserProfile", updateRequest);
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
-    }
+            var anotherUser = await _helperService.CreateTestUserAsync();
 
-    [Fact]
-    public async Task UpdateUserProfile_WithExistingUsername_ShouldReturnConflict()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var testUser = await _helperService.CreateTestUserAsync();
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = anotherUser.Username,
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
 
-        var anotherUser = await _helperService.CreateTestUserAsync();
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var response = await _client.SendAsync(request);
 
-        var updateRequest = new UpdateUserProfileRequest
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("User with same username already exists");
+
+            //Clean up
+            context.User.Remove(testUser);
+            context.User.Remove(anotherUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithExistingEmail_ShouldReturnConflict()
         {
-            Username = anotherUser.Username,
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            var anotherUser = await _helperService.CreateTestUserAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = anotherUser.Email,
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("User with same email already exists");
+
+            //Clean up
+            context.User.Remove(testUser);
+            context.User.Remove(anotherUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithInvalidEmailFormat_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("User with same username already exists");
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = "invalid-email-format", //invalid email
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
 
-        //Clean up
-        context.User.Remove(testUser);
-        context.User.Remove(anotherUser);
-        await context.SaveChangesAsync();
-    }
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-    [Fact]
-    public async Task UpdateUserProfile_WithExistingEmail_ShouldReturnConflict()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            var response = await _client.SendAsync(request);
 
-        var testUser = await _helperService.CreateTestUserAsync();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var anotherUser = await _helperService.CreateTestUserAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Invalid email");
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var updateRequest = new UpdateUserProfileRequest
+        [Fact]
+        public async Task UpdateUserProfile_WithUsernameTooShort_ShouldReturnBadRequest()
         {
-            Username = "updatedusername",
-            Email = anotherUser.Email,
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "abc", //too short (min length = 5)
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Username must be between 5 and 20 characters");
+
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithUsernameTooLong_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = new string('A', 21), //too long
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = _helperService.CreateRandomText()
+            };
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Be("User with same email already exists");
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.User.Remove(testUser);
-        context.User.Remove(anotherUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task UpdateUserProfile_WithInvalidEmailFormat_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var testUser = await _helperService.CreateTestUserAsync();
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Username must be between 5 and 20 characters");
 
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
 
-        var updateRequest = new UpdateUserProfileRequest
+        [Fact]
+        public async Task UpdateUserProfile_WithNameTooShort_ShouldReturnBadRequest()
         {
-            Username = "updatedusername",
-            Email = "invalid-email-format", //invalid email
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = "", //too short
+                Surname = _helperService.CreateRandomText()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Name must be between 1 and 100 characters");
+
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithNameTooLong_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = new string('A', 101), //too long (max length = 100)
+                Surname = _helperService.CreateRandomText()
+            };
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Invalid email");
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task UpdateUserProfile_WithUsernameTooShort_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Name must be between 1 and 100 characters");
 
-        var updateRequest = new UpdateUserProfileRequest
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithSurnameTooShort_ShouldReturnBadRequest()
         {
-            Username = "abc", //too short (min length = 5)
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = "" //too short
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Surname must be between 1 and 100 characters");
+
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task UpdateUserProfile_WithSurnameTooLong_ShouldReturnBadRequest()
         {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-        var response = await _client.SendAsync(request);
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            var updateRequest = new UpdateUserProfileRequest
+            {
+                Username = "updatedusername",
+                Email = _helperService.CreateRandomEmail(),
+                Name = _helperService.CreateRandomText(),
+                Surname = new string('B', 101) //too long (max length = 100)
+            };
 
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Username must be between 5 and 20 characters");
+            var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
+            var response = await _client.SendAsync(request);
 
-    [Fact]
-    public async Task UpdateUserProfile_WithUsernameTooLong_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Surname must be between 1 and 100 characters");
 
-        var updateRequest = new UpdateUserProfileRequest
-        {
-            Username = new string('A', 21), //too long
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = _helperService.CreateRandomText()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
-        {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Username must be between 5 and 20 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task UpdateUserProfile_WithNameTooShort_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var updateRequest = new UpdateUserProfileRequest
-        {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = "", //too short
-            Surname = _helperService.CreateRandomText()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
-        {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Name must be between 1 and 100 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task UpdateUserProfile_WithNameTooLong_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var updateRequest = new UpdateUserProfileRequest
-        {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = new string('A', 101), //too long (max length = 100)
-            Surname = _helperService.CreateRandomText()
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
-        {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Name must be between 1 and 100 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task UpdateUserProfile_WithSurnameTooShort_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var updateRequest = new UpdateUserProfileRequest
-        {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = "" //too short
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
-        {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Surname must be between 1 and 100 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
-    }
-
-    [Fact]
-    public async Task UpdateUserProfile_WithSurnameTooLong_ShouldReturnBadRequest()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-        var testUser = await _helperService.CreateTestUserAsync();
-        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-        var updateRequest = new UpdateUserProfileRequest
-        {
-            Username = "updatedusername",
-            Email = _helperService.CreateRandomEmail(),
-            Name = _helperService.CreateRandomText(),
-            Surname = new string('B', 101) //too long (max length = 100)
-        };
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
-        {
-            Content = JsonContent.Create(updateRequest)
-        };
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _client.SendAsync(request);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().Contain("Surname must be between 1 and 100 characters");
-
-        //Clean up
-        context.User.Remove(testUser);
-        await context.SaveChangesAsync();
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
     }
 }
