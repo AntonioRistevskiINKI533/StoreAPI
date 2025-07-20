@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
-using System;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
@@ -39,7 +38,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var testCompany = await _helperService.CreateTestCompanyAsync();
 
-            var guid = Guid.NewGuid();
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
