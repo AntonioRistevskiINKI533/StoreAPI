@@ -228,5 +228,43 @@ namespace StoreAPI.IntegrationTests.CompanyController
             context.Company.Remove(testCompany);
             await context.SaveChangesAsync();
         }
+
+        [Fact]
+        public async Task AddProduct_WithPriceTooSmall_ShouldReturnBadRequest()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync();
+
+            var addRequest = new AddProductRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                CompanyId = testCompany.Id,
+                Price = 0
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Price must be greater than 0");
+
+            //Clean up
+            context.User.Remove(testUser);
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
+        }
     }
 }

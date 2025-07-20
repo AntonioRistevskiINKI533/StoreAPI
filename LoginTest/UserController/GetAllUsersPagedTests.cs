@@ -122,6 +122,8 @@ namespace StoreAPI.IntegrationTests.UserController
 
             //Clean up
             context.User.Remove(testUser);
+            context.User.Remove(anotherUser1);
+            context.User.Remove(anotherUser2);
             await context.SaveChangesAsync();
         }
 

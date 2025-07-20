@@ -15,16 +15,18 @@ namespace StoreAPI.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IProductSaleRepository _productSaleRepository;
+        private readonly ICompanyRepository _companyRepository;
 
-        public ProductService(IProductRepository productRepository, IProductSaleRepository productSaleRepository)
+        public ProductService(IProductRepository productRepository, IProductSaleRepository productSaleRepository, ICompanyRepository companyRepository)
         {
             _productRepository = productRepository;
             _productSaleRepository = productSaleRepository;
+            _companyRepository = companyRepository;
         }
 
         public async Task AddProduct(AddProductRequest request)
         {
-            var company = await _productRepository.GetById(request.CompanyId);
+            var company = await _companyRepository.GetById(request.CompanyId);
 
             if (company == null)
             {
@@ -82,7 +84,7 @@ namespace StoreAPI.Services
                 throw new ConflictException("Product with same name already exists");
             }
 
-            var company = await _productRepository.GetById(request.CompanyId);
+            var company = await _companyRepository.GetById(request.CompanyId);
 
             if (company == null)
             {
