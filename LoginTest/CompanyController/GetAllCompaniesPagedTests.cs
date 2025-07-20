@@ -10,6 +10,7 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
+using StoreAPI.Models;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
@@ -37,8 +38,8 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var companyUser1 = await _helperService.CreateTestCompanyAsync();
-            var companyUser2 = await _helperService.CreateTestCompanyAsync();
+            var company1 = await _helperService.CreateTestCompanyAsync();
+            var company2 = await _helperService.CreateTestCompanyAsync();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/Company/GetAllCompaniesPaged?pageIndex=0&pageSize=10");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -52,10 +53,24 @@ namespace StoreAPI.IntegrationTests.CompanyController
             result.Items.Should().NotBeNull();
             result.Items.Count.Should().BeGreaterThanOrEqualTo(2); //should contain at least the two created companies
 
+            result.Items.Should().ContainSingle(c =>
+                c.Id == company1.Id &&
+                c.Name == company1.Name &&
+                c.Address == company1.Address &&
+                c.Phone == company1.Phone
+            );
+
+            result.Items.Should().ContainSingle(c =>
+                c.Id == company2.Id &&
+                c.Name == company2.Name &&
+                c.Address == company2.Address &&
+                c.Phone == company2.Phone
+            );
+
             //Clean up
             context.User.Remove(testUser);
-            context.Company.Remove(companyUser1);
-            context.Company.Remove(companyUser2);
+            context.Company.Remove(company1);
+            context.Company.Remove(company2);
             await context.SaveChangesAsync();
         }
     }

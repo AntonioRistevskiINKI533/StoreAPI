@@ -10,6 +10,7 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
+using StoreAPI.Models;
 
 namespace StoreAPI.IntegrationTests.UserController
 {
@@ -50,6 +51,33 @@ namespace StoreAPI.IntegrationTests.UserController
             result.Should().NotBeNull();
             result.Items.Should().NotBeNull();
             result.Items.Count.Should().BeGreaterThanOrEqualTo(3); //should contain at least the three created users
+
+            result.Items.Should().ContainSingle(u =>
+                u.Id == testUser.Id &&
+                u.Username == testUser.Username &&
+                u.Email == testUser.Email &&
+                u.Name == testUser.Name &&
+                u.Surname == testUser.Surname &&
+                u.RoleId == testUser.RoleId
+            );
+
+            result.Items.Should().ContainSingle(u =>
+                u.Id == anotherUser1.Id &&
+                u.Username == anotherUser1.Username &&
+                u.Email == anotherUser1.Email &&
+                u.Name == anotherUser1.Name &&
+                u.Surname == anotherUser1.Surname &&
+                u.RoleId == anotherUser1.RoleId
+            );
+
+            result.Items.Should().ContainSingle(u =>
+                u.Id == anotherUser2.Id &&
+                u.Username == anotherUser2.Username &&
+                u.Email == anotherUser2.Email &&
+                u.Name == anotherUser2.Name &&
+                u.Surname == anotherUser2.Surname &&
+                u.RoleId == anotherUser2.RoleId
+            );
 
             //Clean up
             context.User.Remove(testUser);
