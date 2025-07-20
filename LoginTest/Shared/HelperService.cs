@@ -124,6 +124,25 @@ namespace StoreAPI.IntegrationTests.Shared
             return testProduct;
         }
 
+        public async Task<ProductSale> CreateTestProductSaleAsync(int productId)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+
+            var testProductSale = new ProductSale
+            {
+                ProductId = productId,
+                SoldAmount = new Random().Next(1, 99),
+                PricePerUnit = Math.Round(new Random().Next(1000, 100000) / 100m, 2),
+                Date = DateTime.UtcNow
+            };
+
+            context.ProductSale.Add(testProductSale);
+            await context.SaveChangesAsync();
+
+            return testProductSale;
+        }
+
         public string CreateRandomPhoneNumber()
         {
             return $"+389{Random.Shared.Next(0, 10)}{Random.Shared.Next(10000000, 99999999)}";

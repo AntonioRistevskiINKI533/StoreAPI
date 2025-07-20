@@ -11,7 +11,7 @@ using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
 
-namespace StoreAPI.IntegrationTests.CompanyControllers
+namespace StoreAPI.IntegrationTests.CompanyController
 {
     public class GetAllCompaniesPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

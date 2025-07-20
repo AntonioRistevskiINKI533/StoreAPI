@@ -11,7 +11,7 @@ using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using System.Collections.Generic;
 
-namespace StoreAPI.IntegrationTests.RoleControllers
+namespace StoreAPI.IntegrationTests.RoleController
 {
     public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

@@ -11,7 +11,7 @@ using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 
-namespace StoreAPI.IntegrationTests.CompanyControllers
+namespace StoreAPI.IntegrationTests.CompanyController
 {
     public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

@@ -9,7 +9,7 @@ using StoreAPI.Models.Requests;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Responses;
 
-namespace StoreAPI.IntegrationTests.UserControllers
+namespace StoreAPI.IntegrationTests.UserController
 {
     public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

@@ -11,7 +11,7 @@ using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 
-namespace StoreAPI.IntegrationTests.UserControllers
+namespace StoreAPI.IntegrationTests.UserController
 {
     public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

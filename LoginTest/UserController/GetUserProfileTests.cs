@@ -10,7 +10,7 @@ using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 
-namespace StoreAPI.IntegrationTests.UserControllers
+namespace StoreAPI.IntegrationTests.UserController
 {
     public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

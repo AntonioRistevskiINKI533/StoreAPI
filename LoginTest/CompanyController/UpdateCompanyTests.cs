@@ -12,7 +12,7 @@ using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 using System;
 
-namespace StoreAPI.IntegrationTests.CompanyControllers
+namespace StoreAPI.IntegrationTests.CompanyController
 {
     public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

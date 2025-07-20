@@ -9,7 +9,7 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace StoreAPI.IntegrationTests.UserControllers
+namespace StoreAPI.IntegrationTests.UserController
 {
     public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {

@@ -10,7 +10,7 @@ using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 
-namespace StoreAPI.IntegrationTests.CompanyControllers
+namespace StoreAPI.IntegrationTests.CompanyController
 {
     public class GetCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
