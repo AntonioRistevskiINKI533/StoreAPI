@@ -33,6 +33,10 @@ namespace StoreAPI.Controllers
 
                 return Ok();
             }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (ConflictException ex)
             {
                 return Conflict(ex.Message);

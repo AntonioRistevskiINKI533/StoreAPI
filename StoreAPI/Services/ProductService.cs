@@ -24,6 +24,13 @@ namespace StoreAPI.Services
 
         public async Task AddProduct(AddProductRequest request)
         {
+            var company = await _productRepository.GetById(request.CompanyId);
+
+            if (company == null)
+            {
+                throw new NotFoundException("Company does not exist");
+            }
+
             var product = await _productRepository.GetByName(request.Name);
 
             if (product != null)
@@ -73,6 +80,13 @@ namespace StoreAPI.Services
             if (existingProduct != null && existingProduct.Id != product.Id)
             {
                 throw new ConflictException("Product with same name already exists");
+            }
+
+            var company = await _productRepository.GetById(request.CompanyId);
+
+            if (company == null)
+            {
+                throw new NotFoundException("Company does not exist");
             }
 
             product.Name = request.Name;

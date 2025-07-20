@@ -133,7 +133,7 @@ namespace StoreAPI.IntegrationTests.Shared
             {
                 ProductId = productId,
                 SoldAmount = new Random().Next(1, 99),
-                PricePerUnit = Math.Round(new Random().Next(1000, 100000) / 100m, 2),
+                PricePerUnit = CreateRandomPrice(),
                 Date = DateTime.UtcNow
             };
 
@@ -156,6 +156,10 @@ namespace StoreAPI.IntegrationTests.Shared
         public string CreateRandomEmail()
         {
             return $"{Guid.NewGuid().ToString()}@gmail.com";
+        }
+        public decimal CreateRandomPrice()
+        {
+            return Math.Round(new Random().Next(1000, 100000) / 100m, 2);
         }
     }
 }
