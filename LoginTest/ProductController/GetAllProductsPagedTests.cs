@@ -79,5 +79,111 @@ namespace StoreAPI.IntegrationTests.ProductController
             context.Company.Remove(company);
             await context.SaveChangesAsync();
         }
+
+        [Fact]
+        public async Task GetAllProductsPaged_WithProductNameFilter_ShouldReturnFilteredResults()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var company = await _helperService.CreateTestCompanyAsync();
+
+            var product1 = await _helperService.CreateTestProductAsync(company.Id);
+            var product2 = await _helperService.CreateTestProductAsync(company.Id);
+            var product3 = await _helperService.CreateTestProductAsync(company.Id);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Product/GetAllProductsPaged?pageIndex=0&pageSize=10&productName={product3.Name}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<ProductData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().Be(1);
+
+            result.Items.Should().ContainSingle(p =>
+                p.Id == product3.Id &&
+                p.RegistrationNumber == product3.RegistrationNumber &&
+                p.Name == product3.Name &&
+                p.CompanyId == product3.CompanyId &&
+                p.Price == product3.Price
+            );
+
+            //Clean up
+            context.Product.Remove(product1);
+            context.Product.Remove(product2);
+            context.Product.Remove(product3);
+            await context.SaveChangesAsync();
+
+            context.User.Remove(testUser);
+            context.Company.Remove(company);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task GetAllProductsPaged_WithCompanyIdFilter_ShouldReturnFilteredResults()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var company1 = await _helperService.CreateTestCompanyAsync();
+            var company2 = await _helperService.CreateTestCompanyAsync();
+
+            var product1 = await _helperService.CreateTestProductAsync(company1.Id);
+            var product2 = await _helperService.CreateTestProductAsync(company2.Id);
+            var product3 = await _helperService.CreateTestProductAsync(company2.Id);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Product/GetAllProductsPaged?pageIndex=0&pageSize=10&companyId={company2.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<ProductData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().Be(2);
+
+            result.Items.Should().ContainSingle(p =>
+                p.Id == product2.Id &&
+                p.RegistrationNumber == product2.RegistrationNumber &&
+                p.Name == product2.Name &&
+                p.CompanyId == product2.CompanyId &&
+                p.Price == product2.Price
+            );
+
+            result.Items.Should().ContainSingle(p =>
+                p.Id == product3.Id &&
+                p.RegistrationNumber == product3.RegistrationNumber &&
+                p.Name == product3.Name &&
+                p.CompanyId == product3.CompanyId &&
+                p.Price == product3.Price
+            );
+
+            //Clean up
+            context.Product.Remove(product1);
+            context.Product.Remove(product2);
+            context.Product.Remove(product3);
+            await context.SaveChangesAsync();
+
+            context.User.Remove(testUser);
+            context.Company.Remove(company1);
+            context.Company.Remove(company2);
+            await context.SaveChangesAsync();
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace StoreAPI.IntegrationTests.Shared
             {
                 var guid = Guid.NewGuid();
                 username = $"testuser{guid.ToString().Substring(0, 12)}";
-                email = $"testuser+{guid.ToString()}@example.com";
+                email = CreateRandomEmail();
 
                 // Check if a user with the same username or email already exists
                 userExists = await context.User.AnyAsync(u => u.Username == username || u.Email == email);
@@ -48,8 +48,8 @@ namespace StoreAPI.IntegrationTests.Shared
                 Username = username,
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-                Name = "testname",
-                Surname = "testsurname",
+                Name = CreateRandomText(),
+                Surname = CreateRandomText(),
                 RoleId = isAdmin ? (int)RoleEnum.Admin : (int)RoleEnum.Employee,
             };
 

@@ -94,9 +94,10 @@ namespace StoreAPI.IntegrationTests.UserController
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
             var testUser = await _helperService.CreateTestUserAsync();
-            await context.SaveChangesAsync();
-
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var anotherUser1 = await _helperService.CreateTestUserAsync();
+            var anotherUser2 = await _helperService.CreateTestUserAsync();
 
             var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&fullName={testUser.Name}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -107,7 +108,17 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
             result.Should().NotBeNull();
-            result!.Items.Should().Contain(u => u.Name == testUser.Name);
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().Be(1);
+
+            result.Items.Should().ContainSingle(u =>
+                u.Id == testUser.Id &&
+                u.Username == testUser.Username &&
+                u.Email == testUser.Email &&
+                u.Name == testUser.Name &&
+                u.Surname == testUser.Surname &&
+                u.RoleId == testUser.RoleId
+            );
 
             //Clean up
             context.User.Remove(testUser);
@@ -126,7 +137,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var employeeUser = await _helperService.CreateTestUserAsync();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&roleId={(int)RoleEnum.Employee}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&roleId={employeeUser.RoleId}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);
@@ -135,7 +146,17 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
             result.Should().NotBeNull();
-            result!.Items.Should().Contain(u => u.Id == employeeUser.Id);
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().BeGreaterThanOrEqualTo(1);
+
+            result.Items.Should().ContainSingle(u =>
+                u.Id == employeeUser.Id &&
+                u.Username == employeeUser.Username &&
+                u.Email == employeeUser.Email &&
+                u.Name == employeeUser.Name &&
+                u.Surname == employeeUser.Surname &&
+                u.RoleId == employeeUser.RoleId
+            );
 
             //Clean up
             context.User.Remove(adminUser);
