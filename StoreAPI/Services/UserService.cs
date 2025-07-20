@@ -143,6 +143,13 @@ namespace StoreAPI.Services
 
         public async Task UpdateUser(UpdateUserRequest request)
         {
+            var role = await _roleRepository.GetById(request.RoleId);
+
+            if (role == null)
+            {
+                throw new NotFoundException("Role does not exist");
+            }
+
             var user = await _userRepository.GetById(request.Id);
 
             if (user == null)
