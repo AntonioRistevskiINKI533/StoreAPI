@@ -37,9 +37,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -65,14 +65,50 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     }
 
     [Fact]
+    public async Task UpdateUserProfile_WithNonExistentUserId_ShouldReturnNotFound()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+        var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+        var testUser = await _helperService.CreateTestUserAsync();
+
+        context.User.Remove(testUser);
+        await context.SaveChangesAsync();
+
+        var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+        var updateRequest = new UpdateUserProfileRequest
+        {
+            Username = "updatedusername",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
+        {
+            Content = JsonContent.Create(updateRequest)
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User does not exist");
+    }
+
+    [Fact]
     public async Task UpdateUserProfile_WithoutToken_ShouldReturnUnauthorized()
     {
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var response = await _client.PutAsJsonAsync("/User/UpdateUserProfile", updateRequest);
@@ -81,7 +117,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     }
 
     [Fact]
-    public async Task UpdateUserProfile_WithExistingUsername_ShouldReturnBadRequest()
+    public async Task UpdateUserProfile_WithExistingUsername_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -96,9 +132,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = anotherUser.Username,
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -109,7 +145,10 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User with same username already exists");
 
         //Clean up
         context.User.Remove(testUser);
@@ -118,7 +157,7 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
     }
 
     [Fact]
-    public async Task UpdateUserProfile_WithExistingEmail_ShouldReturnBadRequest()
+    public async Task UpdateUserProfile_WithExistingEmail_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -134,8 +173,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         {
             Username = "updatedusername",
             Email = anotherUser.Email,
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -146,7 +185,10 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
 
         var response = await _client.SendAsync(request);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User with same email already exists");
 
         //Clean up
         context.User.Remove(testUser);
@@ -169,8 +211,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         {
             Username = "updatedusername",
             Email = "invalid-email-format", //invalid email
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -182,6 +224,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Invalid email");
 
         //Clean up
         context.User.Remove(testUser);
@@ -201,9 +246,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "abc", //too short (min length = 5)
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -215,6 +260,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Username must be between 5 and 20 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -234,9 +282,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = new string('A', 21), //too long
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
-            Surname = "UpdatedSurname"
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -248,6 +296,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Username must be between 5 and 20 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -267,9 +318,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "updatedemail@example.com",
+            Email = _helperService.CreateRandomEmail(),
             Name = "", //too short
-            Surname = "UpdatedSurname"
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -281,6 +332,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -300,9 +354,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "updatedemail@example.com",
+            Email = _helperService.CreateRandomEmail(),
             Name = new string('A', 101), //too long (max length = 100)
-            Surname = "UpdatedSurname"
+            Surname = _helperService.CreateRandomText()
         };
 
         var request = new HttpRequestMessage(HttpMethod.Put, "/User/UpdateUserProfile")
@@ -314,6 +368,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Name must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -333,8 +390,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
             Surname = "" //too short
         };
 
@@ -347,6 +404,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Surname must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(testUser);
@@ -366,8 +426,8 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var updateRequest = new UpdateUserProfileRequest
         {
             Username = "updatedusername",
-            Email = "updatedemail@example.com",
-            Name = "UpdatedName",
+            Email = _helperService.CreateRandomEmail(),
+            Name = _helperService.CreateRandomText(),
             Surname = new string('B', 101) //too long (max length = 100)
         };
 
@@ -380,6 +440,9 @@ public class UpdateUserProfileIntegrationTests : IClassFixture<CustomWebApplicat
         var response = await _client.SendAsync(request);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Surname must be between 1 and 100 characters");
 
         //Clean up
         context.User.Remove(testUser);

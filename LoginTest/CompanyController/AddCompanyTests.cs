@@ -65,7 +65,7 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
     }
 
     [Fact]
-    public async Task AddCompany_WithExistingName_ShouldReturnBadRequest()
+    public async Task AddCompany_WithExistingName_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -103,7 +103,7 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
     }
 
     [Fact]
-    public async Task AddCompany_WithExistingAddress_ShouldReturnBadRequest()
+    public async Task AddCompany_WithExistingAddress_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -141,7 +141,7 @@ public class AddCompanyIntegrationTests : IClassFixture<CustomWebApplicationFact
     }
 
     [Fact]
-    public async Task AddCompany_WithExistingPhone_ShouldReturnBadRequest()
+    public async Task AddCompany_WithExistingPhone_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();

@@ -81,7 +81,7 @@ public class RemoveCompanyIntegrationTests : IClassFixture<CustomWebApplicationF
     }
 
     [Fact]
-    public async Task RemoveCompany_WithExistingProduct_ShouldReturnNotFound()
+    public async Task RemoveCompany_WithExistingProduct_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();

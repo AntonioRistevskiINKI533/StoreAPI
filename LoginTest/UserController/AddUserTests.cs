@@ -115,7 +115,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
     }
 
     [Fact]
-    public async Task AddUser_WithExistingUsername_ShouldReturnBadRequest()
+    public async Task AddUser_WithExistingUsername_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -156,7 +156,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
     }
 
     [Fact]
-    public async Task AddUser_WithExistingEmail_ShouldReturnBadRequest()
+    public async Task AddUser_WithExistingEmail_ShouldReturnConflict()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -273,7 +273,7 @@ public class AddUserIntegrationTests : IClassFixture<CustomWebApplicationFactory
     }
 
     [Fact]
-    public async Task AddUser_WithNonExistentRoleId_ShouldReturnBadRequest()
+    public async Task AddUser_WithNonExistentRoleId_ShouldReturnNotFound()
     {
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
