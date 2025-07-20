@@ -42,7 +42,7 @@ public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
         loginResponse.Should().NotBeNull();
-        loginResponse!.Token.Should().NotBeNullOrEmpty();
+        loginResponse.Token.Should().NotBeNullOrEmpty();
 
         //Clean up
         context.User.Remove(testUser);

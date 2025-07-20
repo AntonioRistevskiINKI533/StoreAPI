@@ -9,6 +9,7 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
+using StoreAPI.Exceptions;
 
 public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
@@ -77,6 +78,9 @@ public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplication
 
         var response = await _client.GetAsync("/User/GetUserProfile");
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User does not exist");
     }
 }

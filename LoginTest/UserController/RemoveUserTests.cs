@@ -72,6 +72,9 @@ public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFact
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("User does not exist");
+
         //Clean up
         context.User.Remove(adminUser);
         await context.SaveChangesAsync();
