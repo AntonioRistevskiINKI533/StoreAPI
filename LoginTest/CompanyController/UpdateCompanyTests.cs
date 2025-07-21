@@ -69,6 +69,47 @@ namespace StoreAPI.IntegrationTests.CompanyController
         }
 
         [Fact]
+        public async Task UpdateCompany_WithNonExistentCompanyId_ShouldReturnNotFound()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync();
+
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
+
+            var updateRequest = new UpdateCompanyRequest
+            {
+                Id = testCompany.Id,
+                Name = _helperService.CreateRandomText(),
+                Address = _helperService.CreateRandomText(),
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "/Company/UpdateCompany")
+            {
+                Content = JsonContent.Create(updateRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Be("Company does not exist");
+
+            //Clean up
+            context.User.Remove(testUser);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
         public async Task UpdateCompany_WithExistingName_ShouldReturnConflict()
         {
             using var scope = _factory.Services.CreateScope();
