@@ -10,18 +10,16 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
-using StoreAPI.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
-namespace StoreAPI.IntegrationTests.ProductController
+namespace StoreAPI.IntegrationTests.ProductSaleController
 {
-    public class GetAllProductsPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetAllProductSalesPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
 
-        public GetAllProductsPagedIntegrationTests(CustomWebApplicationFactory factory)
+        public GetAllProductSalesPagedIntegrationTests(CustomWebApplicationFactory factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
@@ -29,7 +27,7 @@ namespace StoreAPI.IntegrationTests.ProductController
         }
 
         [Fact]
-        public async Task GetAllProductsPaged_WithValidToken_ShouldReturnOkAndPagedResult()
+        public async Task GetAllProductSalesPaged_WithValidToken_ShouldReturnOkAndPagedResult()
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -41,42 +39,47 @@ namespace StoreAPI.IntegrationTests.ProductController
 
             var company = await _helperService.CreateTestCompanyAsync();
 
-            var product1 = await _helperService.CreateTestProductAsync(company.Id);
-            var product2 = await _helperService.CreateTestProductAsync(company.Id);
+            var product = await _helperService.CreateTestProductAsync(company.Id);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "/Product/GetAllProductsPaged?pageIndex=0&pageSize=10");
+            var productSale1 = await _helperService.CreateTestProductSaleAsync(product.Id);
+            var productSale2 = await _helperService.CreateTestProductSaleAsync(product.Id);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ProductSale/GetAllProductSalesPaged?pageIndex=0&pageSize=10");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var result = await response.Content.ReadFromJsonAsync<PagedModel<ProductData>>();
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<ProductSaleData>>();
             result.Should().NotBeNull();
             result.Items.Should().NotBeNull();
             result.Items.Count.Should().BeGreaterThanOrEqualTo(2); //should contain at least the two created products
 
             result.Items.Should().ContainSingle(p =>
-                p.Id == product1.Id &&
-                p.RegistrationNumber == product1.RegistrationNumber &&
-                p.Name == product1.Name &&
-                p.CompanyId == product1.CompanyId &&
-                p.Price == product1.Price &&
-                p.CompanyName == company.Name
+                p.Id == productSale1.Id &&
+                p.ProductId == productSale1.ProductId &&
+                p.SoldAmount == productSale1.SoldAmount &&
+                p.PricePerUnit == productSale1.PricePerUnit &&
+                p.Date.ToString() == productSale1.Date.ToString() &&
+                p.ProductName ==product.Name
             );
 
             result.Items.Should().ContainSingle(p =>
-                p.Id == product2.Id &&
-                p.RegistrationNumber == product2.RegistrationNumber &&
-                p.Name == product2.Name &&
-                p.CompanyId == product2.CompanyId &&
-                p.Price == product2.Price &&
-                p.CompanyName == company.Name
+                p.Id == productSale2.Id &&
+                p.ProductId == productSale2.ProductId &&
+                p.SoldAmount == productSale2.SoldAmount &&
+                p.PricePerUnit == productSale2.PricePerUnit &&
+                p.Date.ToString() == productSale2.Date.ToString() &&
+                p.ProductName == product.Name
             );
 
             //Clean up
-            context.Product.Remove(product1);
-            context.Product.Remove(product2);
+            context.ProductSale.Remove(productSale1);
+            context.ProductSale.Remove(productSale2);
+            await context.SaveChangesAsync();
+
+            context.Product.Remove(product);
             await context.SaveChangesAsync();
 
             context.User.Remove(testUser);
@@ -84,7 +87,7 @@ namespace StoreAPI.IntegrationTests.ProductController
             await context.SaveChangesAsync();
         }
 
-        [Fact]
+/*        [Fact]
         public async Task GetAllProductsPaged_WithProductNameFilter_ShouldReturnFilteredResults()
         {
             using var scope = _factory.Services.CreateScope();
@@ -118,8 +121,7 @@ namespace StoreAPI.IntegrationTests.ProductController
                 p.RegistrationNumber == product3.RegistrationNumber &&
                 p.Name == product3.Name &&
                 p.CompanyId == product3.CompanyId &&
-                p.Price == product3.Price &&
-                p.CompanyName == company.Name
+                p.Price == product3.Price
             );
 
             //Clean up
@@ -168,8 +170,7 @@ namespace StoreAPI.IntegrationTests.ProductController
                 p.RegistrationNumber == product2.RegistrationNumber &&
                 p.Name == product2.Name &&
                 p.CompanyId == product2.CompanyId &&
-                p.Price == product2.Price &&
-                p.CompanyName == company2.Name
+                p.Price == product2.Price
             );
 
             result.Items.Should().ContainSingle(p =>
@@ -177,8 +178,7 @@ namespace StoreAPI.IntegrationTests.ProductController
                 p.RegistrationNumber == product3.RegistrationNumber &&
                 p.Name == product3.Name &&
                 p.CompanyId == product3.CompanyId &&
-                p.Price == product3.Price &&
-                p.CompanyName == company2.Name
+                p.Price == product3.Price
             );
 
             //Clean up
@@ -191,6 +191,6 @@ namespace StoreAPI.IntegrationTests.ProductController
             context.Company.Remove(company1);
             context.Company.Remove(company2);
             await context.SaveChangesAsync();
-        }
+        }*/
     }
 }

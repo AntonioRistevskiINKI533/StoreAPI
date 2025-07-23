@@ -58,7 +58,8 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.Email == testUser.Email &&
                 u.Name == testUser.Name &&
                 u.Surname == testUser.Surname &&
-                u.RoleId == testUser.RoleId
+                u.RoleId == testUser.RoleId &&
+                u.RoleName == ((RoleEnum)testUser.RoleId).ToString()
             );
 
             result.Items.Should().ContainSingle(u =>
@@ -67,7 +68,8 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.Email == anotherUser1.Email &&
                 u.Name == anotherUser1.Name &&
                 u.Surname == anotherUser1.Surname &&
-                u.RoleId == anotherUser1.RoleId
+                u.RoleId == anotherUser1.RoleId &&
+                u.RoleName == ((RoleEnum)anotherUser1.RoleId).ToString()
             );
 
             result.Items.Should().ContainSingle(u =>
@@ -76,7 +78,8 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.Email == anotherUser2.Email &&
                 u.Name == anotherUser2.Name &&
                 u.Surname == anotherUser2.Surname &&
-                u.RoleId == anotherUser2.RoleId
+                u.RoleId == anotherUser2.RoleId &&
+                u.RoleName == ((RoleEnum)anotherUser2.RoleId).ToString()
             );
 
             //Clean up
@@ -117,7 +120,8 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.Email == testUser.Email &&
                 u.Name == testUser.Name &&
                 u.Surname == testUser.Surname &&
-                u.RoleId == testUser.RoleId
+                u.RoleId == testUser.RoleId &&
+                u.RoleName == ((RoleEnum)testUser.RoleId).ToString()
             );
 
             //Clean up
@@ -157,7 +161,8 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.Email == employeeUser.Email &&
                 u.Name == employeeUser.Name &&
                 u.Surname == employeeUser.Surname &&
-                u.RoleId == employeeUser.RoleId
+                u.RoleId == employeeUser.RoleId &&
+                u.RoleName == ((RoleEnum)employeeUser.RoleId).ToString()
             );
 
             //Clean up
