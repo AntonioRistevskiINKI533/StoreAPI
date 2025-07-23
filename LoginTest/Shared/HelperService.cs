@@ -157,9 +157,15 @@ namespace StoreAPI.IntegrationTests.Shared
         {
             return $"{Guid.NewGuid().ToString()}@gmail.com";
         }
+
         public decimal CreateRandomPrice()
         {
             return Math.Round(new Random().Next(1000, 100000) / 100m, 2);
+        }
+
+        public int CreateRandomNumber()
+        {
+            return Random.Shared.Next(1, 20);
         }
     }
 }
