@@ -124,7 +124,7 @@ namespace StoreAPI.IntegrationTests.Shared
             return testProduct;
         }
 
-        public async Task<ProductSale> CreateTestProductSaleAsync(int productId)
+        public async Task<ProductSale> CreateTestProductSaleAsync(int productId, DateTime? date = null)
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -134,7 +134,7 @@ namespace StoreAPI.IntegrationTests.Shared
                 ProductId = productId,
                 SoldAmount = new Random().Next(1, 99),
                 PricePerUnit = CreateRandomPrice(),
-                Date = DateTime.UtcNow
+                Date = date ?? DateTime.UtcNow
             };
 
             context.ProductSale.Add(testProductSale);
