@@ -10,8 +10,6 @@ using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
-using StoreAPI.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace StoreAPI.IntegrationTests.ProductController
 {
@@ -77,6 +75,59 @@ namespace StoreAPI.IntegrationTests.ProductController
             //Clean up
             context.Product.Remove(product1);
             context.Product.Remove(product2);
+            await context.SaveChangesAsync();
+
+            context.User.Remove(testUser);
+            context.Company.Remove(company);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task GetAllProductsPaged_PagingTest_ShouldReturnOkAndPagedResult()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var company = await _helperService.CreateTestCompanyAsync();
+
+            var product1 = await _helperService.CreateTestProductAsync(company.Id);
+            var product2 = await _helperService.CreateTestProductAsync(company.Id);
+            var product3 = await _helperService.CreateTestProductAsync(company.Id);
+            var product4 = await _helperService.CreateTestProductAsync(company.Id);
+            var product5 = await _helperService.CreateTestProductAsync(company.Id);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Product/GetAllProductsPaged?pageIndex=2&pageSize=2&companyId={company.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<ProductData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().BeGreaterThanOrEqualTo(1);
+
+            result.Items.Should().ContainSingle(p =>
+                p.Id == product5.Id &&
+                p.RegistrationNumber == product5.RegistrationNumber &&
+                p.Name == product5.Name &&
+                p.CompanyId == product5.CompanyId &&
+                p.Price == product5.Price &&
+                p.CompanyName == company.Name
+            );
+
+            //Clean up
+            context.Product.Remove(product1);
+            context.Product.Remove(product2);
+            context.Product.Remove(product3);
+            context.Product.Remove(product4);
+            context.Product.Remove(product5);
             await context.SaveChangesAsync();
 
             context.User.Remove(testUser);

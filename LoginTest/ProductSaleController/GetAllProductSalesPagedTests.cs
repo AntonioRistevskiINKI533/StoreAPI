@@ -89,6 +89,73 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
         }
 
         [Fact]
+        public async Task GetAllProductSalesPaged_PagingTest_ShouldReturnOkAndPagedResult()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var company = await _helperService.CreateTestCompanyAsync();
+
+            var product = await _helperService.CreateTestProductAsync(company.Id);
+
+            var productSale1 = await _helperService.CreateTestProductSaleAsync(product.Id);
+            var productSale2 = await _helperService.CreateTestProductSaleAsync(product.Id);
+            var productSale3 = await _helperService.CreateTestProductSaleAsync(product.Id);
+            var productSale4 = await _helperService.CreateTestProductSaleAsync(product.Id);
+            var productSale5 = await _helperService.CreateTestProductSaleAsync(product.Id);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/ProductSale/GetAllProductSalesPaged?pageIndex=1&pageSize=2&productId={product.Id}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<ProductSaleData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().Be(2);
+
+            result.Items.Should().ContainSingle(p =>
+                p.Id == productSale3.Id &&
+                p.ProductId == productSale3.ProductId &&
+                p.SoldAmount == productSale3.SoldAmount &&
+                p.PricePerUnit == productSale3.PricePerUnit &&
+                p.Date.ToString() == productSale3.Date.ToString() &&
+                p.ProductName == product.Name
+            );
+
+            result.Items.Should().ContainSingle(p =>
+                p.Id == productSale4.Id &&
+                p.ProductId == productSale4.ProductId &&
+                p.SoldAmount == productSale4.SoldAmount &&
+                p.PricePerUnit == productSale4.PricePerUnit &&
+                p.Date.ToString() == productSale4.Date.ToString() &&
+                p.ProductName == product.Name
+            );
+
+            //Clean up
+            context.ProductSale.Remove(productSale1);
+            context.ProductSale.Remove(productSale2);
+            context.ProductSale.Remove(productSale3);
+            context.ProductSale.Remove(productSale4);
+            context.ProductSale.Remove(productSale5);
+            await context.SaveChangesAsync();
+
+            context.Product.Remove(product);
+            await context.SaveChangesAsync();
+
+            context.User.Remove(testUser);
+            context.Company.Remove(company);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
         public async Task GetAllProductSalesPaged_WithProductIdFilter_ShouldReturnFilteredResults()
         {
             using var scope = _factory.Services.CreateScope();
