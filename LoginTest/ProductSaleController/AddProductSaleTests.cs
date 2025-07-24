@@ -62,8 +62,8 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var addedProductSale = await context.ProductSale.FirstOrDefaultAsync(
                 u => u.ProductId == addRequest.ProductId &&
                 u.SoldAmount == addRequest.SoldAmount &&
-                u.PricePerUnit == addRequest.PricePerUnit
-                //u.Date.ToString() == addRequest.Date.ToString() TODO fix this
+                u.PricePerUnit == addRequest.PricePerUnit &&
+                u.Date == addRequest.Date
                 );
 
             addedProductSale.Should().NotBeNull();
@@ -80,8 +80,8 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             await context.SaveChangesAsync();
         }
 
-/*        [Fact]
-        public async Task AddProduct_WithNonExistingCompanyId_ShouldReturnNotFound()
+        [Fact]
+        public async Task AddProductSale_WithValidDataAndMissingPriceAndDate_ShouldReturnOk()
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -92,17 +92,72 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
 
             var testCompany = await _helperService.CreateTestCompanyAsync();
 
-            var addRequest = new AddProductRequest
+            var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
+
+            var addRequest = new AddProductSaleRequest
             {
-                Name = _helperService.CreateRandomText(),
-                CompanyId = testCompany.Id,
-                Price = _helperService.CreateRandomPrice()
+                ProductId = testProduct.Id,
+                SoldAmount = _helperService.CreateRandomNumber()
             };
 
-            context.Company.Remove(testCompany);
+            var request = new HttpRequestMessage(HttpMethod.Post, "/ProductSale/AddProductSale")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var date = DateTime.Now;
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+            var addedProductSale = await context.ProductSale.FirstOrDefaultAsync(
+                u => u.ProductId == addRequest.ProductId &&
+                u.SoldAmount == addRequest.SoldAmount &&
+                u.PricePerUnit == testProduct.Price && // should take the products price if none sent
+                u.Date >= date && u.Date < date.AddSeconds(5) // should take momentary date if none sent (added check for maximum 5 seconds difference since call can take longer and the date.now gets a second plus)
+                );
+
+            addedProductSale.Should().NotBeNull();
+
+            //Clean up
+            context.ProductSale.Remove(addedProductSale!);
             await context.SaveChangesAsync();
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
+            context.Product.Remove(testProduct);
+            await context.SaveChangesAsync();
+
+            context.User.Remove(testUser);
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
+        public async Task AddProductSale_WithNonExistingProductId_ShouldReturnNotFound()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync();
+
+            var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
+
+            context.Product.Remove(testProduct);
+            await context.SaveChangesAsync();
+
+            var addRequest = new AddProductSaleRequest
+            {
+                ProductId = testProduct.Id,
+                SoldAmount = _helperService.CreateRandomNumber(),
+                PricePerUnit = _helperService.CreateRandomPrice(),
+                Date = new DateTime(2025, 6, 12)
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/ProductSale/AddProductSale")
             {
                 Content = JsonContent.Create(addRequest)
             };
@@ -113,87 +168,7 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
 
             var content = await response.Content.ReadAsStringAsync();
-            content.Should().Contain("Company does not exist");
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
-        }
-
-        [Fact]
-        public async Task AddProduct_WithExistingName_ShouldReturnConflict()
-        {
-            using var scope = _factory.Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-            var testUser = await _helperService.CreateTestUserAsync();
-            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-            var testCompany = await _helperService.CreateTestCompanyAsync();
-
-            var existingProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
-
-            var addRequest = new AddProductRequest
-            {
-                Name = existingProduct.Name,
-                CompanyId = testCompany.Id,
-                Price = _helperService.CreateRandomPrice()
-            };
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
-            {
-                Content = JsonContent.Create(addRequest)
-            };
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _client.SendAsync(request);
-
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
-
-            var content = await response.Content.ReadAsStringAsync();
-            content.Should().Be("Product with same name already exists");
-
-            //Clean up
-            context.Product.Remove(existingProduct);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
-        }
-
-        [Fact]
-        public async Task AddProduct_WithNameTooShort_ShouldReturnBadRequest()
-        {
-            using var scope = _factory.Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-            var testUser = await _helperService.CreateTestUserAsync();
-            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-            var testCompany = await _helperService.CreateTestCompanyAsync();
-
-            var addRequest = new AddProductRequest
-            {
-                Name = "",
-                CompanyId = testCompany.Id,
-                Price = _helperService.CreateRandomPrice()
-            };
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
-            {
-                Content = JsonContent.Create(addRequest)
-            };
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _client.SendAsync(request);
-
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-            var content = await response.Content.ReadAsStringAsync();
-            content.Should().Contain("Name must be between 1 and 500 characters");
+            content.Should().Be("Product does not exist");
 
             //Clean up
             context.User.Remove(testUser);
@@ -202,7 +177,7 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
         }
 
         [Fact]
-        public async Task AddProduct_WithNameTooLong_ShouldReturnBadRequest()
+        public async Task AddProductSale_WithPriceTooSmall_ShouldReturnBadRequest()
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -213,52 +188,16 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
 
             var testCompany = await _helperService.CreateTestCompanyAsync();
 
-            var addRequest = new AddProductRequest
+            var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
+
+            var addRequest = new AddProductSaleRequest
             {
-                Name = new string('A', 501),
-                CompanyId = testCompany.Id,
-                Price = _helperService.CreateRandomPrice()
+                ProductId = testProduct.Id,
+                SoldAmount = _helperService.CreateRandomNumber(),
+                PricePerUnit = 0
             };
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
-            {
-                Content = JsonContent.Create(addRequest)
-            };
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _client.SendAsync(request);
-
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-
-            var content = await response.Content.ReadAsStringAsync();
-            content.Should().Contain("Name must be between 1 and 500 characters");
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
-        }
-
-        [Fact]
-        public async Task AddProduct_WithPriceTooSmall_ShouldReturnBadRequest()
-        {
-            using var scope = _factory.Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
-
-            var testUser = await _helperService.CreateTestUserAsync();
-            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
-
-            var testCompany = await _helperService.CreateTestCompanyAsync();
-
-            var addRequest = new AddProductRequest
-            {
-                Name = _helperService.CreateRandomText(),
-                CompanyId = testCompany.Id,
-                Price = 0
-            };
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
+            var request = new HttpRequestMessage(HttpMethod.Post, "/ProductSale/AddProductSale")
             {
                 Content = JsonContent.Create(addRequest)
             };
@@ -272,9 +211,55 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             content.Should().Contain("Price must be greater than 0");
 
             //Clean up
+            context.Product.Remove(testProduct);
+            await context.SaveChangesAsync();
+
             context.User.Remove(testUser);
             context.Company.Remove(testCompany);
             await context.SaveChangesAsync();
-        }*/
+        }
+
+        [Fact]
+        public async Task AddProductSale_WithSoldAmountTooSmall_ShouldReturnBadRequest()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync();
+
+            var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
+
+            var addRequest = new AddProductSaleRequest
+            {
+                ProductId = testProduct.Id,
+                SoldAmount = 0,
+                PricePerUnit = _helperService.CreateRandomPrice()
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/ProductSale/AddProductSale")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+
+            var content = await response.Content.ReadAsStringAsync();
+            content.Should().Contain("Sold amount must be greater than 0");
+
+            //Clean up
+            context.Product.Remove(testProduct);
+            await context.SaveChangesAsync();
+
+            context.User.Remove(testUser);
+            context.Company.Remove(testCompany);
+            await context.SaveChangesAsync();
+        }
     }
 }

@@ -45,7 +45,7 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var productSale1 = await _helperService.CreateTestProductSaleAsync(product.Id);
             var productSale2 = await _helperService.CreateTestProductSaleAsync(product.Id);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "/ProductSale/GetAllProductSalesPaged?pageIndex=0&pageSize=10");
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ProductSale/GetAllProductSalesPaged?pageIndex=0&pageSize=20");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);

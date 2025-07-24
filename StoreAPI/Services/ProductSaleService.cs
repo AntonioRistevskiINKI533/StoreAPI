@@ -24,16 +24,15 @@ namespace StoreAPI.Services
         public async Task AddProductSale(AddProductSaleRequest request)
         {
             //TODO if stock in product is added i will need to check if we have in stock enough, or maybe not... since the stock was from tomorrow hm.... i will have to take wayt from stock idk. or add options to take or not take
+            var product = await _productRepository.GetById(request.ProductId);
+
+            if (product == null)
+            {
+                throw new NotFoundException("Product does not exist");
+            }
 
             if (request.PricePerUnit == null)
             {
-                var product = await _productRepository.GetById(request.ProductId);
-
-                if (product == null)
-                {
-                    throw new NotFoundException("Product does not exist");
-                }
-
                 request.PricePerUnit = product.Price;
             }
 
@@ -57,6 +56,16 @@ namespace StoreAPI.Services
             if (productSale == null)
             {
                 throw new NotFoundException("Product sale does not exist");
+            }
+
+            if (request.ProductId != productSale.ProductId)
+            {
+                var product = await _productRepository.GetById(request.ProductId);
+
+                if (product == null)
+                {
+                    throw new NotFoundException("Product does not exist");
+                }
             }
 
             productSale.ProductId = request.ProductId;

@@ -84,11 +84,14 @@ namespace StoreAPI.Services
                 throw new ConflictException("Product with same name already exists");
             }
 
-            var company = await _companyRepository.GetById(request.CompanyId);
-
-            if (company == null)
+            if (request.CompanyId != product.CompanyId)
             {
-                throw new NotFoundException("Company does not exist");
+                var company = await _companyRepository.GetById(request.CompanyId);
+
+                if (company == null)
+                {
+                    throw new NotFoundException("Company does not exist");
+                }
             }
 
             product.Name = request.Name;
