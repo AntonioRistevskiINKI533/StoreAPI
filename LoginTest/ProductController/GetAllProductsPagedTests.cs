@@ -75,9 +75,9 @@ namespace StoreAPI.IntegrationTests.ProductController
             //Clean up
             context.Product.Remove(product1);
             context.Product.Remove(product2);
+            context.User.Remove(testUser);
             await context.SaveChangesAsync();
 
-            context.User.Remove(testUser);
             context.Company.Remove(company);
             await context.SaveChangesAsync();
         }

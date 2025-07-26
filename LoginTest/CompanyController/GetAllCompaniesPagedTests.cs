@@ -73,5 +73,47 @@ namespace StoreAPI.IntegrationTests.CompanyController
             context.Company.Remove(company2);
             await context.SaveChangesAsync();
         }
+
+        [Fact]
+        public async Task GetAllCompaniesPaged_PagingTest_ShouldReturnOkAndPagedResult()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var company1 = await _helperService.CreateTestCompanyAsync();
+            var company2 = await _helperService.CreateTestCompanyAsync();
+            var company3 = await _helperService.CreateTestCompanyAsync();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Company/GetAllCompaniesPaged?pageIndex=2&pageSize=1");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<CompanyData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().Be(1);
+
+            result.Items.Should().ContainSingle(c =>
+                c.Id == company3.Id &&
+                c.Name == company3.Name &&
+                c.Address == company3.Address &&
+                c.Phone == company3.Phone
+            );
+
+            //Clean up
+            context.User.Remove(testUser);
+            context.Company.Remove(company1);
+            context.Company.Remove(company2);
+            context.Company.Remove(company3);
+            await context.SaveChangesAsync();
+        }
     }
 }

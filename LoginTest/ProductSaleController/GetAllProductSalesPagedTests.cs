@@ -78,12 +78,12 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             //Clean up
             context.ProductSale.Remove(productSale1);
             context.ProductSale.Remove(productSale2);
+            context.User.Remove(testUser);
             await context.SaveChangesAsync();
 
             context.Product.Remove(product);
             await context.SaveChangesAsync();
 
-            context.User.Remove(testUser);
             context.Company.Remove(company);
             await context.SaveChangesAsync();
         }

@@ -90,6 +90,48 @@ namespace StoreAPI.IntegrationTests.UserController
         }
 
         [Fact]
+        public async Task GetAllUsersPaged_PagingTest_ShouldReturnOkAndPagedResult()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync();
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var anotherUser1 = await _helperService.CreateTestUserAsync(false, testUser.Name, testUser.Surname);
+            var anotherUser2 = await _helperService.CreateTestUserAsync(false, testUser.Name, testUser.Surname);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=1&pageSize=1&fullName={testUser.Name} {testUser.Surname}");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedModel<UserData>>();
+            result.Should().NotBeNull();
+            result.Items.Should().NotBeNull();
+            result.Items.Count.Should().Be(1);
+
+            result.Items.Should().ContainSingle(u =>
+                u.Id == anotherUser1.Id &&
+                u.Username == anotherUser1.Username &&
+                u.Email == anotherUser1.Email &&
+                u.Name == anotherUser1.Name &&
+                u.Surname == anotherUser1.Surname &&
+                u.RoleId == anotherUser1.RoleId &&
+                u.RoleName == ((RoleEnum)anotherUser1.RoleId).ToString()
+            );
+
+            //Clean up
+            context.User.Remove(testUser);
+            context.User.Remove(anotherUser1);
+            context.User.Remove(anotherUser2);
+            await context.SaveChangesAsync();
+        }
+
+        [Fact]
         public async Task GetAllUsersPaged_WithFullNameFilter_ShouldReturnFilteredResults()
         {
             using var scope = _factory.Services.CreateScope();

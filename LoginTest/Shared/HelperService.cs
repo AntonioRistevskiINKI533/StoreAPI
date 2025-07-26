@@ -24,7 +24,7 @@ namespace StoreAPI.IntegrationTests.Shared
             _factory = factory;
         }
 
-        public async Task<User> CreateTestUserAsync(bool isAdmin = false)
+        public async Task<User> CreateTestUserAsync(bool isAdmin = false, string name = null, string surname = null)
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -48,8 +48,8 @@ namespace StoreAPI.IntegrationTests.Shared
                 Username = username,
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Pa$$w0rd!"),
-                Name = CreateRandomText(),
-                Surname = CreateRandomText(),
+                Name = name == null ? CreateRandomText() : name,
+                Surname = surname == null ? CreateRandomText() : surname,
                 RoleId = isAdmin ? (int)RoleEnum.Admin : (int)RoleEnum.Employee,
             };
 
