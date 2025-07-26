@@ -38,7 +38,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",//TODO
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
@@ -93,7 +93,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
@@ -171,7 +171,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = existingUser.Email, //duplicate email
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
@@ -210,7 +210,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = "invalid-email", //invalid
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
@@ -248,7 +248,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
@@ -286,7 +286,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
@@ -400,7 +400,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = "",
                 Surname = _helperService.CreateRandomText(),
@@ -438,7 +438,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = new string('A', 101),
                 Surname = _helperService.CreateRandomText(),
@@ -476,7 +476,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = "",
@@ -514,7 +514,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var addRequest = new AddUserRequest
             {
-                Username = "newuser",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = new string('A', 101),

@@ -148,9 +148,10 @@ namespace StoreAPI.IntegrationTests.Shared
             return $"+389{Random.Shared.Next(0, 10)}{Random.Shared.Next(10000000, 99999999)}";
         }
 
-        public string CreateRandomText()
+        public string CreateRandomText(int? sizeLimit = null)
         {
-            return $"randomtext{Guid.NewGuid().ToString()}";
+            var text = $"randomtext{Guid.NewGuid().ToString()}";
+            return sizeLimit.HasValue && text.Length > sizeLimit.Value ? text.Substring(0, sizeLimit.Value) : text;
         }
 
         public string CreateRandomEmail()

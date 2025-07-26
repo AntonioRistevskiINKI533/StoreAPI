@@ -38,7 +38,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText()
@@ -82,7 +82,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText()
@@ -107,7 +107,7 @@ namespace StoreAPI.IntegrationTests.UserController
         {
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText()
@@ -173,7 +173,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = anotherUser.Email,
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText()
@@ -211,7 +211,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = "invalid-email-format", //invalid email
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText()
@@ -319,7 +319,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = "", //too short
                 Surname = _helperService.CreateRandomText()
@@ -355,7 +355,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = new string('A', 101), //too long (max length = 100)
                 Surname = _helperService.CreateRandomText()
@@ -391,7 +391,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = "" //too short
@@ -427,7 +427,7 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var updateRequest = new UpdateUserProfileRequest
             {
-                Username = "updatedusername",
+                Username = _helperService.CreateRandomText(20),
                 Email = _helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = new string('B', 101) //too long (max length = 100)
