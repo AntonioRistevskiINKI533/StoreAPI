@@ -37,9 +37,9 @@ namespace StoreAPI.Repositories
             return company;
         }
 
-        public async Task<PagedModel<Company>> GetAllPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<Company>> GetAllPaged(int pageIndex, int pageSize, string? name = null)
         {
-            var items = await _context.Company.ToListAsync();
+            var items = (await _context.Company.ToListAsync()).Where(x => x.Name.Contains(name == null ? "" : name)).ToList();
 
             var totalItems = items.Count;
 

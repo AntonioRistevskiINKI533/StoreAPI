@@ -8,7 +8,7 @@ namespace StoreAPI.Repositories.Interfaces
         Task<Company> GetByNameAddressOrPhone(string name, string address, string phone, int? companyId = null);
         Task<Company> Add(Company company);
         Task<Company> Update(Company company);
-        Task<PagedModel<Company>> GetAllPaged(int pageIndex, int pageSize);
+        Task<PagedModel<Company>> GetAllPaged(int pageIndex, int pageSize, string? name);
         Task<Company> GetById(int id);
         Task Remove(Company company);
     }

@@ -111,9 +111,9 @@ namespace StoreAPI.Services
             };
         }
 
-        public async Task<PagedModel<CompanyData>> GetAllCompaniesPaged(int pageIndex, int pageSize)
+        public async Task<PagedModel<CompanyData>> GetAllCompaniesPaged(int pageIndex, int pageSize, string? name)
         {
-            var companies = await _companyRepository.GetAllPaged(pageIndex, pageSize);
+            var companies = await _companyRepository.GetAllPaged(pageIndex, pageSize, name);
 
             var companyData = companies.Items.Select(x => new CompanyData
             {

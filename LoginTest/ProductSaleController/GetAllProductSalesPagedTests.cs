@@ -109,6 +109,7 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var productSale4 = await _helperService.CreateTestProductSaleAsync(product.Id);
             var productSale5 = await _helperService.CreateTestProductSaleAsync(product.Id);
 
+            //using a filter in order to test the paging correctly, since other tests data interferes sometimes if all tests run at the same time
             var request = new HttpRequestMessage(HttpMethod.Get, $"/ProductSale/GetAllProductSalesPaged?pageIndex=1&pageSize=2&productId={product.Id}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 

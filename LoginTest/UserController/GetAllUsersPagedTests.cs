@@ -102,6 +102,7 @@ namespace StoreAPI.IntegrationTests.UserController
             var anotherUser1 = await _helperService.CreateTestUserAsync(false, testUser.Name, testUser.Surname);
             var anotherUser2 = await _helperService.CreateTestUserAsync(false, testUser.Name, testUser.Surname);
 
+            //using a filter in order to test the paging correctly, since other tests data interferes sometimes if all tests run at the same time
             var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=1&pageSize=1&fullName={testUser.Name} {testUser.Surname}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 

@@ -90,11 +90,11 @@ namespace StoreAPI.Controllers
         [Authorize]
         [HttpGet("[action]")]
         [ProducesResponseType(typeof(PagedModel<CompanyData>), 200)]
-        public async Task<ActionResult<PagedModel<CompanyData>>> GetAllCompaniesPaged(int pageIndex, int pageSize)
+        public async Task<ActionResult<PagedModel<CompanyData>>> GetAllCompaniesPaged(int pageIndex, int pageSize, string? name)
         {
             try
             {
-                var companyies = await _companyService.GetAllCompaniesPaged(pageIndex, pageSize);
+                var companyies = await _companyService.GetAllCompaniesPaged(pageIndex, pageSize, name);
 
                 return Ok(companyies);
             }

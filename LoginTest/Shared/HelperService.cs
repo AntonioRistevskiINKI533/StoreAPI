@@ -59,19 +59,19 @@ namespace StoreAPI.IntegrationTests.Shared
             return testUser;
         }
 
-        public async Task<Company> CreateTestCompanyAsync()
+        public async Task<Company> CreateTestCompanyAsync(string companyNamePrefix = null)
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
 
-            var name = string.Empty;
+            var name = companyNamePrefix ?? string.Empty;
             var address = string.Empty;
             var phone = string.Empty;
             var companyExists = true;
 
             while (companyExists)
             {
-                name = CreateRandomText();
+                name += CreateRandomText();
                 address = CreateRandomText();
                 phone = CreateRandomPhoneNumber();
 

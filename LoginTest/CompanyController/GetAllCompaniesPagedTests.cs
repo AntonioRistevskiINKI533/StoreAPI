@@ -38,10 +38,13 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var company1 = await _helperService.CreateTestCompanyAsync();
-            var company2 = await _helperService.CreateTestCompanyAsync();
+            //using a filter in order to test the paging correctly, since other tests data (companies) interferes sometimes if all tests run at the same time
+            string companyNamePrefix = "pagetestcomp";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "/Company/GetAllCompaniesPaged?pageIndex=0&pageSize=10");
+            var company1 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
+            var company2 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetAllCompaniesPaged?pageIndex=0&pageSize=10&name={companyNamePrefix}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);
@@ -85,11 +88,13 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var company1 = await _helperService.CreateTestCompanyAsync();
-            var company2 = await _helperService.CreateTestCompanyAsync();
-            var company3 = await _helperService.CreateTestCompanyAsync();
+            string companyNamePrefix = "pagetestcomp";
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "/Company/GetAllCompaniesPaged?pageIndex=2&pageSize=1");
+            var company1 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
+            var company2 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
+            var company3 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetAllCompaniesPaged?pageIndex=2&pageSize=1&name={companyNamePrefix}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);
