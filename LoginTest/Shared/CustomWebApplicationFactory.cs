@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using StoreAPI;
 using StoreAPI.Services;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-// using VDS.RDF.Query.Algebra;
-using StoreAPI.Models;
 using Microsoft.AspNetCore.TestHost;
 using StoreAPI.Models.Contexts;
 using System.Linq;
@@ -21,42 +17,10 @@ namespace StoreAPI.IntegrationTests.Shared
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
-        //private readonly MongoDbRunner _mongoRunner = MongoDbRunner.Start();
-
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.ConfigureAppConfiguration((context, config) =>
-            {
-                var connectionString = context.Configuration.GetConnectionString("TestConnection");
-
-                var inMemorySettings = new Dictionary<string, string?>
-                {
-                    ["StoreDatabaseSettings:ConnectionString"] = connectionString
-                };
-
-
-                config.AddInMemoryCollection(inMemorySettings);
-            });
-
-            builder.ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.AddConsole(); // Send logs to output
-            });
-
-            builder.UseEnvironment("Development");
-
             builder.ConfigureTestServices(services =>
             {
-                // Override only what you need
-                /*            services.Configure<SemanticDatabaseSettings>(options =>
-                            {
-                                options.ConnectionString = _mongoRunner.ConnectionString;
-                                options.DatabaseName = "TestDb";
-                                options.RdfCollectionName = "RdfTest";
-                            });*/
-
-                // Remove the real DbContext registration
                 var descriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(DbContextOptions<StoreContext>));
                 if (descriptor != null)
@@ -64,18 +28,16 @@ namespace StoreAPI.IntegrationTests.Shared
                     services.Remove(descriptor);
                 }
 
-                // Add an in-memory database for testing
-                /*            services.AddDbContext<StoreContext>(options =>
-                            {
-                                options.UseInMemoryDatabase("InMemoryTestDb");
-                            });*/
-                services.AddDbContext<StoreContext>(options =>
+                services.AddDbContext<StoreContext>((sp, options) =>
                 {
-                    options.UseSqlServer("data source=DESKTOP-41L0M4T\\SQLEXPRESS; initial catalog=TestStoreDB; integrated security=True; MultipleActiveResultSets=True; Encrypt=False;");
+                    var cfg = sp.GetRequiredService<IConfiguration>();
+                    var cs = cfg.GetConnectionString("TestConnection");
+                    options.UseSqlServer(cs);
                     //options.UseInMemoryDatabase("TestDb"); could use this for inMemory tests
                 });
 
-                services.AddScoped<ICompanyRepository, CompanyRepository>();
+                //could be used if i use dummy services and i need to mock repositories
+/*              services.AddScoped<ICompanyRepository, CompanyRepository>();
                 services.AddScoped<IProductSaleRepository, ProductSaleRepository>();
                 services.AddScoped<IProductRepository, ProductRepository>();
                 services.AddScoped<IRoleRepository, RoleRepository>();
@@ -86,23 +48,20 @@ namespace StoreAPI.IntegrationTests.Shared
                 services.AddScoped<ProductService>();
                 services.AddScoped<RoleService>();
                 services.AddScoped<UserService>();
-                services.AddScoped<TokenService>();
+                services.AddScoped<TokenService>();*/
 
-                var sp = services.BuildServiceProvider();
+                /*var sp = services.BuildServiceProvider();
                 using var scope = sp.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<StoreContext>();
-                db.Database.Migrate(); // Applies migrations at startup
+                db.Database.Migrate();*/ // Applies migrations at startup
             });
 
-        }
-
-        /*    protected override void Dispose(bool disposing)
+            //clear default logging providers and send console logs to output
+            builder.ConfigureLogging(logging =>
             {
-                base.Dispose(disposing);
-                if (disposing)
-                {
-                    _mongoRunner.Dispose();
-                }
-            }*/
+                logging.ClearProviders(); 
+                logging.AddConsole();
+            });
+        }
     }
 }
