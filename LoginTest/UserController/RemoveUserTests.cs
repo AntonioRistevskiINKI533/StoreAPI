@@ -8,14 +8,17 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.UserController
 {
-    public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class RemoveUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "RemoveUser_";
 
         public RemoveUserIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -31,9 +34,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var userToRemove = await _helperService.CreateTestUserAsync();
+            var userToRemove = await _helperService.CreateTestUserAsync(prefix);
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
             var adminToken = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -45,10 +48,6 @@ namespace StoreAPI.IntegrationTests.UserController
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
             (await context.User.AnyAsync(c => c.Id == userToRemove.Id)).Should().BeFalse();
-
-            //Clean up
-            context.User.Remove(adminUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -58,12 +57,12 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var userToRemove = await _helperService.CreateTestUserAsync();
+            var userToRemove = await _helperService.CreateTestUserAsync(prefix);
 
             context.User.Remove(userToRemove);
             await context.SaveChangesAsync();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
             var adminToken = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -76,10 +75,11 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("User does not exist");
+        }
 
-            //Clean up
-            context.User.Remove(adminUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

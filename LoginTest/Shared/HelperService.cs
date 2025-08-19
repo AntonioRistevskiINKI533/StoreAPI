@@ -1,4 +1,5 @@
-﻿using StoreAPI.Enums;
+﻿
+using StoreAPI.Enums;
 using StoreAPI.Models.Contexts;
 using StoreAPI.Models;
 using System;
@@ -24,7 +25,7 @@ namespace StoreAPI.IntegrationTests.Shared
             _factory = factory;
         }
 
-        public async Task<User> CreateTestUserAsync(bool isAdmin = false, string name = null, string surname = null)
+        public async Task<User> CreateTestUserAsync(string prefix, bool isAdmin = false, string name = null, string surname = null)
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
@@ -37,7 +38,7 @@ namespace StoreAPI.IntegrationTests.Shared
             {
                 var guid = Guid.NewGuid();
                 username = $"testuser{guid.ToString().Substring(0, 12)}";
-                email = CreateRandomEmail();
+                email = prefix+CreateRandomEmail();
 
                 // Check if a user with the same username or email already exists
                 userExists = await context.User.AnyAsync(u => u.Username == username || u.Email == email);
@@ -167,6 +168,58 @@ namespace StoreAPI.IntegrationTests.Shared
         public int CreateRandomNumber()
         {
             return Random.Shared.Next(1, 20);
+        }
+
+        public void CleanUp(string prefix)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+
+            var testCompanies = context.Company
+                .Where(c => c.Name.StartsWith(prefix))
+                .ToList();
+
+            var testCompanyIds = testCompanies.Select(c => c.Id).ToList();
+            var testProducts = context.Product
+                .Where(p => testCompanyIds.Contains(p.CompanyId))
+                .ToList();
+
+            var testProductIds = testProducts.Select(c => c.Id).ToList();
+            var testProductSales = context.ProductSale
+                .Where(p => testProductIds.Contains(p.ProductId))
+                .ToList();
+
+            if (testProductSales.Any())
+            {
+                context.ProductSale.RemoveRange(testProductSales);
+            }
+
+            context.SaveChanges();
+
+            if (testProducts.Any())
+            {
+                context.Product.RemoveRange(testProducts);
+            }
+
+            context.SaveChanges();
+
+            if (testCompanies.Any())
+            {
+                context.Company.RemoveRange(testCompanies);
+            }
+
+            context.SaveChanges();
+
+            var testUsers = context.User
+                .Where(u => u.Email.StartsWith(prefix))
+                .ToList();
+
+            if (testUsers.Any())
+            {
+                context.User.RemoveRange(testUsers);
+            }
+
+            context.SaveChanges();
         }
     }
 }

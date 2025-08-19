@@ -9,14 +9,17 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.ProductSaleController
 {
-    public class GetProductSaleIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetProductSaleIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "GetProductSale_";
 
         public GetProductSaleIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -32,11 +35,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
 
@@ -56,17 +59,6 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             productSaleData.SoldAmount.Should().Be(testProductSale.SoldAmount);
             productSaleData.PricePerUnit.Should().Be(testProductSale.PricePerUnit);
             productSaleData.Date.ToString().Should().Be(testProductSale.Date.ToString());
-
-            //Clean up
-            context.ProductSale.Remove(testProductSale);
-            await context.SaveChangesAsync();
-
-            context.Product.Remove(testProduct);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -76,11 +68,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
 
@@ -98,14 +90,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Product sale does not exist");
+        }
 
-            //Clean up
-            context.Product.Remove(testProduct);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

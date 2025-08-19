@@ -8,14 +8,17 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
-    public class RemoveCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class RemoveCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "RemoveCompany_";
 
         public RemoveCompanyIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -31,11 +34,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var request = new HttpRequestMessage(HttpMethod.Delete, $"/Company/RemoveCompany?companyId={testCompany.Id}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -45,10 +48,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
             (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeFalse();
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -58,11 +57,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             context.Company.Remove(testCompany);
             await context.SaveChangesAsync();
@@ -76,10 +75,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Company does not exist");
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -89,11 +84,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
 
@@ -108,14 +103,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
             content.Should().Be("Company has products, please delete them first");
 
             (await context.Company.AnyAsync(c => c.Id == testCompany.Id)).Should().BeTrue();
+        }
 
-            //Clean up
-            context.Product.Remove(testProduct);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

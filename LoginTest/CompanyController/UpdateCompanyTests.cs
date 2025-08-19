@@ -10,14 +10,17 @@ using Microsoft.EntityFrameworkCore;
 using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
+using System;
+using System.Linq;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
-    public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class UpdateCompanyIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "UpdateCompany_";
 
         public UpdateCompanyIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -33,15 +36,15 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
-                Name = _helperService.CreateRandomText(),
+                Name = prefix+_helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -61,11 +64,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
             updatedCompany.Name.Should().Be(updateRequest.Name);
             updatedCompany.Address.Should().Be(updateRequest.Address);
             updatedCompany.Phone.Should().Be(updateRequest.Phone);
-
-            //Clean up
-            context.Company.Remove(updatedCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -75,10 +73,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             context.Company.Remove(testCompany);
             await context.SaveChangesAsync();
@@ -86,7 +84,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
-                Name = _helperService.CreateRandomText(),
+                Name = prefix+_helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -103,10 +101,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Company does not exist");
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -116,12 +110,12 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
-            var existingCompany = await _helperService.CreateTestCompanyAsync();
+            var existingCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
@@ -142,13 +136,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.Conflict);
 
             var content = await response.Content.ReadAsStringAsync();
-            content.Should().Be("Company with same name already exists");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.Company.Remove(existingCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
+            content.Should().Be("Company with same name already exists");;
         }
 
         [Fact]
@@ -158,12 +146,12 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
-            var existingCompany = await _helperService.CreateTestCompanyAsync();
+            var existingCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
@@ -185,12 +173,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Company with same address already exists");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.Company.Remove(existingCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -200,17 +182,17 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
-            var existingCompany = await _helperService.CreateTestCompanyAsync();
+            var existingCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
-                Name = _helperService.CreateRandomText(),
+                Name = prefix+_helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = existingCompany.Phone
             };
@@ -227,12 +209,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Company with same phone already exists");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.Company.Remove(existingCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -242,15 +218,15 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
-                Name = _helperService.CreateRandomText(),
+                Name = prefix+_helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = "abc"
             };
@@ -267,11 +243,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Invalid phone");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -281,10 +252,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
@@ -306,11 +277,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Name must be between 1 and 500 characters");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -320,10 +286,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
@@ -345,11 +311,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Name must be between 1 and 500 characters");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -359,15 +320,15 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
-                Name = _helperService.CreateRandomText(),
+                Name = prefix+_helperService.CreateRandomText(),
                 Address = "",
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -384,11 +345,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Address must be between 5 and 200 characters");
-
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -398,15 +354,15 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var updateRequest = new UpdateCompanyRequest
             {
                 Id = testCompany.Id,
-                Name = _helperService.CreateRandomText(),
+                Name = prefix+_helperService.CreateRandomText(),
                 Address = new string('A', 201),
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -423,11 +379,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Address must be between 5 and 200 characters");
+        }
 
-            //Clean up
-            context.Company.Remove(testCompany);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

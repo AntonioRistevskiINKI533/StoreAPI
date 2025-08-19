@@ -8,14 +8,17 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Requests;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Models.Responses;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.UserController
 {
-    public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class LoginIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "Login_";
 
         public LoginIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -30,7 +33,7 @@ namespace StoreAPI.IntegrationTests.UserController
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var loginRequest = new LoginRequest
             {
@@ -45,10 +48,6 @@ namespace StoreAPI.IntegrationTests.UserController
             var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
             loginResponse.Should().NotBeNull();
             loginResponse.Token.Should().NotBeNullOrEmpty();
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -63,6 +62,11 @@ namespace StoreAPI.IntegrationTests.UserController
             var response = await _client.PostAsJsonAsync("/User/Login", loginRequest);
 
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+        }
+
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

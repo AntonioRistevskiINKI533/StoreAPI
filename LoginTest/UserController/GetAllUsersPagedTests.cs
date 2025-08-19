@@ -11,14 +11,17 @@ using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
 using StoreAPI.Models;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.UserController
 {
-    public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetAllUsersPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "GetAllUsersPaged_";
 
         public GetAllUsersPagedIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -34,11 +37,11 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var anotherUser1 = await _helperService.CreateTestUserAsync();
-            var anotherUser2 = await _helperService.CreateTestUserAsync();
+            var anotherUser1 = await _helperService.CreateTestUserAsync(prefix);
+            var anotherUser2 = await _helperService.CreateTestUserAsync(prefix);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/User/GetAllUsersPaged?pageIndex=0&pageSize=10");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -81,12 +84,6 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.RoleId == anotherUser2.RoleId &&
                 u.RoleName == ((RoleEnum)anotherUser2.RoleId).ToString()
             );
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.User.Remove(anotherUser1);
-            context.User.Remove(anotherUser2);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -96,11 +93,11 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var anotherUser1 = await _helperService.CreateTestUserAsync(false, testUser.Name, testUser.Surname);
-            var anotherUser2 = await _helperService.CreateTestUserAsync(false, testUser.Name, testUser.Surname);
+            var anotherUser1 = await _helperService.CreateTestUserAsync(prefix, false, testUser.Name, testUser.Surname);
+            var anotherUser2 = await _helperService.CreateTestUserAsync(prefix, false, testUser.Name, testUser.Surname);
 
             //using a filter in order to test the paging correctly, since other tests data interferes sometimes if all tests run at the same time
             var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=1&pageSize=1&fullName={testUser.Name} {testUser.Surname}");
@@ -124,12 +121,6 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.RoleId == anotherUser1.RoleId &&
                 u.RoleName == ((RoleEnum)anotherUser1.RoleId).ToString()
             );
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.User.Remove(anotherUser1);
-            context.User.Remove(anotherUser2);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -139,11 +130,11 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var anotherUser1 = await _helperService.CreateTestUserAsync();
-            var anotherUser2 = await _helperService.CreateTestUserAsync();
+            var anotherUser1 = await _helperService.CreateTestUserAsync(prefix);
+            var anotherUser2 = await _helperService.CreateTestUserAsync(prefix);
 
             var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&fullName={testUser.Name}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -166,12 +157,6 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.RoleId == testUser.RoleId &&
                 u.RoleName == ((RoleEnum)testUser.RoleId).ToString()
             );
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.User.Remove(anotherUser1);
-            context.User.Remove(anotherUser2);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -181,10 +166,10 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
-            var employeeUser = await _helperService.CreateTestUserAsync();
+            var employeeUser = await _helperService.CreateTestUserAsync(prefix);
 
             var request = new HttpRequestMessage(HttpMethod.Get, $"/User/GetAllUsersPaged?pageIndex=0&pageSize=10&roleId={employeeUser.RoleId}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -207,11 +192,11 @@ namespace StoreAPI.IntegrationTests.UserController
                 u.RoleId == employeeUser.RoleId &&
                 u.RoleName == ((RoleEnum)employeeUser.RoleId).ToString()
             );
+        }
 
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(employeeUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

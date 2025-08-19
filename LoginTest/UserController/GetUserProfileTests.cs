@@ -9,14 +9,17 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.UserController
 {
-    public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetUserProfileIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "GetUserProfile_";
 
         public GetUserProfileIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -32,7 +35,7 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
@@ -46,10 +49,6 @@ namespace StoreAPI.IntegrationTests.UserController
             profile.Should().NotBeNull();
             profile!.Username.Should().Be(testUser.Username);
             profile.Email.Should().Be(testUser.Email);
-
-            //Cleanup
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -67,7 +66,7 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
@@ -83,6 +82,11 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("User does not exist");
+        }
+
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

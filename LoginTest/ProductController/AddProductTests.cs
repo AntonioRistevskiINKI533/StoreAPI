@@ -10,14 +10,17 @@ using Microsoft.EntityFrameworkCore;
 using StoreAPI.Enums;
 using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
+using System;
+using System.Linq;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
-    public class AddProductIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class AddProductIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "AddProduct_";
 
         public AddProductIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -33,10 +36,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var addRequest = new AddProductRequest
             {
@@ -60,14 +63,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
             addedProduct.Name.Should().Be(addRequest.Name);
             addedProduct.CompanyId.Should().Be(addRequest.CompanyId);
             addedProduct.Price.Should().Be(addRequest.Price);
-
-            //Clean up
-            context.Product.Remove(addedProduct);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -77,10 +72,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var addRequest = new AddProductRequest
             {
@@ -104,10 +99,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Company does not exist");
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -117,10 +108,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var existingProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
 
@@ -143,14 +134,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Product with same name already exists");
-
-            //Clean up
-            context.Product.Remove(existingProduct);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -160,10 +143,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var addRequest = new AddProductRequest
             {
@@ -184,11 +167,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Name must be between 1 and 500 characters");
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -198,10 +176,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var addRequest = new AddProductRequest
             {
@@ -222,11 +200,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Name must be between 1 and 500 characters");
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -236,10 +209,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var testCompany = await _helperService.CreateTestCompanyAsync();
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
 
             var addRequest = new AddProductRequest
             {
@@ -260,11 +233,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Price must be greater than 0");
+        }
 
-            //Clean up
-            context.User.Remove(testUser);
-            context.Company.Remove(testCompany);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

@@ -9,14 +9,17 @@ using StoreAPI.Models.Contexts;
 using StoreAPI.Models.Requests;
 using StoreAPI.IntegrationTests.Shared;
 using StoreAPI.Enums;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.UserController
 {
-    public class UpdateUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class UpdateUserIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "UpdateUser_";
 
         public UpdateUserIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -32,9 +35,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -42,7 +45,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -65,11 +68,6 @@ namespace StoreAPI.IntegrationTests.UserController
             updatedUser.Name.Should().Be(updateRequest.Name);
             updatedUser.Surname.Should().Be(updateRequest.Surname);
             updatedUser.RoleId.Should().Be(updateRequest.RoleId);
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(updatedUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -78,13 +76,13 @@ namespace StoreAPI.IntegrationTests.UserController
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var updateRequest = new UpdateUserRequest
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -93,10 +91,6 @@ namespace StoreAPI.IntegrationTests.UserController
             var response = await _client.PutAsJsonAsync("/User/UpdateUser", updateRequest);
 
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
-
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -106,9 +100,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var employeeUser = await _helperService.CreateTestUserAsync();
+            var employeeUser = await _helperService.CreateTestUserAsync(prefix);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(employeeUser.Id, ((RoleEnum)employeeUser.RoleId).ToString());
 
@@ -116,7 +110,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -131,11 +125,6 @@ namespace StoreAPI.IntegrationTests.UserController
             var response = await _client.SendAsync(request);
 
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
-
-            //Clean up
-            context.User.Remove(employeeUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -145,9 +134,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             context.User.Remove(testUser);
             await context.SaveChangesAsync();
@@ -158,7 +147,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -176,10 +165,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("User does not exist");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -189,11 +174,11 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
-            var anotherUser = await _helperService.CreateTestUserAsync();
+            var anotherUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -201,7 +186,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = anotherUser.Username,
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -219,12 +204,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("User with same username already exists");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            context.User.Remove(anotherUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -234,11 +213,11 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
-            var anotherUser = await _helperService.CreateTestUserAsync();
+            var anotherUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -264,12 +243,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("User with same email already exists");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            context.User.Remove(anotherUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -279,9 +252,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -307,11 +280,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Invalid email");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -321,9 +289,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -331,7 +299,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = "abc", //too short (min length = 5)
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -349,11 +317,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Username must be between 5 and 20 characters");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -363,9 +326,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -373,7 +336,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = new string('A', 21), //too long
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -391,11 +354,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Username must be between 5 and 20 characters");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -405,9 +363,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -415,7 +373,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = "",
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -433,11 +391,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Name must be between 1 and 100 characters");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -447,9 +400,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -457,7 +410,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = new string('A', 101), // too long (max length = 100)
                 Surname = _helperService.CreateRandomText(),
                 RoleId = (int)RoleEnum.Employee
@@ -475,11 +428,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Name must be between 1 and 100 characters");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -489,9 +437,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -499,7 +447,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = "", //too short
                 RoleId = (int)RoleEnum.Employee
@@ -517,11 +465,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Surname must be between 1 and 100 characters");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -531,9 +474,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -541,7 +484,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = new string('A', 101), //too long
                 RoleId = (int)RoleEnum.Employee
@@ -559,11 +502,6 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Surname must be between 1 and 100 characters");
-
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -573,9 +511,9 @@ namespace StoreAPI.IntegrationTests.UserController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var adminUser = await _helperService.CreateTestUserAsync(true);
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
 
@@ -583,7 +521,7 @@ namespace StoreAPI.IntegrationTests.UserController
             {
                 Id = testUser.Id,
                 Username = _helperService.CreateRandomText(20),
-                Email = _helperService.CreateRandomEmail(),
+                Email = prefix+_helperService.CreateRandomEmail(),
                 Name = _helperService.CreateRandomText(),
                 Surname = _helperService.CreateRandomText(),
                 RoleId = 9999 //Non-existent role ID
@@ -601,11 +539,11 @@ namespace StoreAPI.IntegrationTests.UserController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Be("Role does not exist");
+        }
 
-            //Clean up
-            context.User.Remove(adminUser);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

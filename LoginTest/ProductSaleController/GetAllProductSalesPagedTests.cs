@@ -11,14 +11,16 @@ using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
 using System;
+using System.Linq;
 
 namespace StoreAPI.IntegrationTests.ProductSaleController
 {
-    public class GetAllProductSalesPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetAllProductSalesPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "GetAllProductSalesPaged_";
 
         public GetAllProductSalesPagedIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -34,11 +36,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var company = await _helperService.CreateTestCompanyAsync();
+            var company = await _helperService.CreateTestCompanyAsync(prefix);
 
             var product = await _helperService.CreateTestProductAsync(company.Id);
 
@@ -74,18 +76,6 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
                 p.Date.ToString() == productSale2.Date.ToString() &&
                 p.ProductName == product.Name
             );
-
-            //Clean up
-            context.ProductSale.Remove(productSale1);
-            context.ProductSale.Remove(productSale2);
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
-
-            context.Product.Remove(product);
-            await context.SaveChangesAsync();
-
-            context.Company.Remove(company);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -95,11 +85,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var company = await _helperService.CreateTestCompanyAsync();
+            var company = await _helperService.CreateTestCompanyAsync(prefix);
 
             var product = await _helperService.CreateTestProductAsync(company.Id);
 
@@ -139,21 +129,6 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
                 p.Date.ToString() == productSale4.Date.ToString() &&
                 p.ProductName == product.Name
             );
-
-            //Clean up
-            context.ProductSale.Remove(productSale1);
-            context.ProductSale.Remove(productSale2);
-            context.ProductSale.Remove(productSale3);
-            context.ProductSale.Remove(productSale4);
-            context.ProductSale.Remove(productSale5);
-            await context.SaveChangesAsync();
-
-            context.Product.Remove(product);
-            await context.SaveChangesAsync();
-
-            context.User.Remove(testUser);
-            context.Company.Remove(company);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -163,11 +138,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var company = await _helperService.CreateTestCompanyAsync();
+            var company = await _helperService.CreateTestCompanyAsync(prefix);
 
             var product = await _helperService.CreateTestProductAsync(company.Id);
             var product2 = await _helperService.CreateTestProductAsync(company.Id);
@@ -205,20 +180,6 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
                 p.Date.ToString() == productSale3.Date.ToString() &&
                 p.ProductName == product2.Name
             );
-
-            //Clean up
-            context.ProductSale.Remove(productSale1);
-            context.ProductSale.Remove(productSale2);
-            context.ProductSale.Remove(productSale3);
-            await context.SaveChangesAsync();
-
-            context.Product.Remove(product);
-            context.Product.Remove(product2);
-            await context.SaveChangesAsync();
-
-            context.User.Remove(testUser);
-            context.Company.Remove(company);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -228,11 +189,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            var company = await _helperService.CreateTestCompanyAsync();
+            var company = await _helperService.CreateTestCompanyAsync(prefix);
 
             var product = await _helperService.CreateTestProductAsync(company.Id);
 
@@ -275,20 +236,11 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
                 p.Date.ToString() == productSale3.Date.ToString() &&
                 p.ProductName == product.Name
             );
+        }
 
-            //Clean up
-            context.ProductSale.Remove(productSale1);
-            context.ProductSale.Remove(productSale2);
-            context.ProductSale.Remove(productSale3);
-            context.ProductSale.Remove(productSale4);
-            await context.SaveChangesAsync();
-
-            context.Product.Remove(product);
-            await context.SaveChangesAsync();
-
-            context.User.Remove(testUser);
-            context.Company.Remove(company);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

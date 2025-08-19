@@ -11,14 +11,17 @@ using StoreAPI.Models.Datas;
 using System.Net;
 using StoreAPI.Enums;
 using StoreAPI.Models;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
-    public class GetAllCompaniesPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetAllCompaniesPagedIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "GetAllCompaniesPaged_";
 
         public GetAllCompaniesPagedIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -34,17 +37,14 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            //using a filter in order to test the paging correctly, since other tests data (companies) interferes sometimes if all tests run at the same time
-            string companyNamePrefix = "pagetestcomp";
+            var company1 = await _helperService.CreateTestCompanyAsync(prefix);
+            var company2 = await _helperService.CreateTestCompanyAsync(prefix);
 
-            var company1 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
-            var company2 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
-
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetAllCompaniesPaged?pageIndex=0&pageSize=10&name={companyNamePrefix}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetAllCompaniesPaged?pageIndex=0&pageSize=10&name={prefix}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);
@@ -69,12 +69,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
                 c.Address == company2.Address &&
                 c.Phone == company2.Phone
             );
-
-            //Clean up
-            context.User.Remove(testUser);
-            context.Company.Remove(company1);
-            context.Company.Remove(company2);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -84,17 +78,15 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
 
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
-            string companyNamePrefix = "pagetestcomp";
+            var company1 = await _helperService.CreateTestCompanyAsync(prefix);
+            var company2 = await _helperService.CreateTestCompanyAsync(prefix);
+            var company3 = await _helperService.CreateTestCompanyAsync(prefix);
 
-            var company1 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
-            var company2 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
-            var company3 = await _helperService.CreateTestCompanyAsync(companyNamePrefix);
-
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetAllCompaniesPaged?pageIndex=2&pageSize=1&name={companyNamePrefix}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Company/GetAllCompaniesPaged?pageIndex=2&pageSize=1&name={prefix}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _client.SendAsync(request);
@@ -112,13 +104,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
                 c.Address == company3.Address &&
                 c.Phone == company3.Phone
             );
+        }
 
-            //Clean up
-            context.User.Remove(testUser);
-            context.Company.Remove(company1);
-            context.Company.Remove(company2);
-            context.Company.Remove(company3);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }

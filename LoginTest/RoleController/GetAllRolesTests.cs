@@ -10,14 +10,17 @@ using StoreAPI.Enums;
 using StoreAPI.Models.Datas;
 using StoreAPI.IntegrationTests.Shared;
 using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace StoreAPI.IntegrationTests.RoleController
 {
-    public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFactory>
+    public class GetAllRolesIntegrationTests : IClassFixture<CustomWebApplicationFactory>, IDisposable
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
         private readonly HelperService _helperService;
+        private readonly string prefix = "GetAllRoles_";
 
         public GetAllRolesIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -33,7 +36,7 @@ namespace StoreAPI.IntegrationTests.RoleController
             var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
             var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-            var testUser = await _helperService.CreateTestUserAsync();
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
             var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/Role/GetAllRoles");
@@ -46,10 +49,11 @@ namespace StoreAPI.IntegrationTests.RoleController
             var roles = await response.Content.ReadFromJsonAsync<List<RoleData>>();
             roles.Should().NotBeNull();
             roles.Should().NotBeEmpty();
+        }
 
-            //Clean up
-            context.User.Remove(testUser);
-            await context.SaveChangesAsync();
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }
