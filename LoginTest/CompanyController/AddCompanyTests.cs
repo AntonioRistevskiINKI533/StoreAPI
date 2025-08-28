@@ -13,6 +13,11 @@ using System.Net.Http.Json;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using Microsoft.Extensions.Logging;
+using StoreAPI.Models;
+using StoreAPI.Repositories.Interfaces;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
@@ -42,7 +47,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var addRequest = new AddCompanyRequest
             {
-                Name = prefix+_helperService.CreateRandomText(),
+                Name = prefix + _helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -152,7 +157,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var addRequest = new AddCompanyRequest
             {
-                Name = prefix+_helperService.CreateRandomText(),
+                Name = prefix + _helperService.CreateRandomText(),
                 Address = testCompany.Address,
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -185,7 +190,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var addRequest = new AddCompanyRequest
             {
-                Name = prefix+_helperService.CreateRandomText(),
+                Name = prefix + _helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = testCompany.Phone
             };
@@ -216,7 +221,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var addRequest = new AddCompanyRequest
             {
-                Name = prefix+_helperService.CreateRandomText(),
+                Name = prefix + _helperService.CreateRandomText(),
                 Address = _helperService.CreateRandomText(),
                 Phone = "abc"
             };
@@ -309,7 +314,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var addRequest = new AddCompanyRequest
             {
-                Name = prefix+_helperService.CreateRandomText(),
+                Name = prefix + _helperService.CreateRandomText(),
                 Address = "abcd",
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -340,7 +345,7 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var addRequest = new AddCompanyRequest
             {
-                Name = prefix+_helperService.CreateRandomText(),
+                Name = prefix + _helperService.CreateRandomText(),
                 Address = new string('A', 201),
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
@@ -356,12 +361,37 @@ namespace StoreAPI.IntegrationTests.CompanyController
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
 
             var content = await response.Content.ReadAsStringAsync();
-            content.Should().Contain("Address must be between 5 and 200 characters");;
+            content.Should().Contain("Address must be between 5 and 200 characters"); ;
         }
 
         public void Dispose()
         {
             _helperService.CleanUp(prefix);
+        }
+
+        [Fact]
+        public async Task AddCompany_WithMockedRepoAndWithValidData_ShouldReturnOk()
+        {
+            var repoMock = new Mock<ICompanyRepository>();
+            repoMock.Setup(r => r.GetByNameAddressOrPhone(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null))
+                    .ReturnsAsync((Company)null);
+
+            var productRepoMock = new Mock<IProductRepository>();
+            var service = new CompanyService(repoMock.Object, productRepoMock.Object);
+
+            var controller = new StoreAPI.Controllers.CompanyController(Mock.Of<ILogger<StoreAPI.Controllers.CompanyController>>(), service);
+
+            var request = new AddCompanyRequest 
+            { 
+                Name = _helperService.CreateRandomText(), 
+                Address = _helperService.CreateRandomText(), 
+                Phone = _helperService.CreateRandomPhoneNumber()
+            };
+
+            var result = await controller.AddCompany(request);
+
+            result.Should().BeOfType<OkResult>();
+            repoMock.Verify(r => r.Add(It.Is<Company>(c => c.Name == request.Name)), Times.Once);
         }
     }
 }
