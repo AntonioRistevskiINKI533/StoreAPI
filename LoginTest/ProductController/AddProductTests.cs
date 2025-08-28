@@ -65,6 +65,45 @@ namespace StoreAPI.IntegrationTests.CompanyController
             addedProduct.Price.Should().Be(addRequest.Price);
         }
 
+        [Theory]
+        [InlineData("TV Hisense", 900.99)]
+        [InlineData("GTX 1650M", 250.50)]
+        [InlineData("Iphone", 1000.00)]
+        public async Task AddProduct_WithDifferentValidData_ShouldReturnOk(string name, decimal price)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
+
+            var addRequest = new AddProductRequest
+            {
+                Name = prefix + name,
+                CompanyId = testCompany.Id,
+                Price = price
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Product/AddProduct")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+            var addedProduct = await context.Product.FirstOrDefaultAsync(u => u.Name == addRequest.Name);
+            addedProduct.Should().NotBeNull();
+            addedProduct.Name.Should().Be(addRequest.Name);
+            addedProduct.CompanyId.Should().Be(addRequest.CompanyId);
+            addedProduct.Price.Should().Be(addRequest.Price);
+        }
+
         [Fact]
         public async Task AddProduct_WithNonExistingCompanyId_ShouldReturnNotFound()
         {

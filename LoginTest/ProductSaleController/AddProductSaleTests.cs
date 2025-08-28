@@ -71,6 +71,56 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
             addedProductSale.Should().NotBeNull();
         }
 
+        [Theory]
+        [InlineData(5, 9.99, "2000-06-12")]
+        [InlineData(10, 19.50, "2025-07-01")]
+        [InlineData(20, 100.00, "2010-08-15")]
+        public async Task AddProductSale_WithDifferentValidData_ShouldReturnOk(
+            int soldAmount,
+            decimal pricePerUnit,
+            string dateString
+        )
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var testCompany = await _helperService.CreateTestCompanyAsync(prefix);
+            var testProduct = await _helperService.CreateTestProductAsync(testCompany.Id);
+
+            var date = DateTime.Parse(dateString);
+
+            var addRequest = new AddProductSaleRequest
+            {
+                ProductId = testProduct.Id,
+                SoldAmount = soldAmount,
+                PricePerUnit = pricePerUnit,
+                Date = date
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/ProductSale/AddProductSale")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+            var addedProductSale = await context.ProductSale.FirstOrDefaultAsync(
+                u => u.ProductId == addRequest.ProductId &&
+                     u.SoldAmount == addRequest.SoldAmount &&
+                     u.PricePerUnit == addRequest.PricePerUnit &&
+                     u.Date == addRequest.Date
+            );
+
+            addedProductSale.Should().NotBeNull();
+        }
+
         [Fact]
         public async Task AddProductSale_WithValidDataAndMissingPriceAndDate_ShouldReturnOk()
         {

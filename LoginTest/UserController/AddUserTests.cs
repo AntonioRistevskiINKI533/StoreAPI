@@ -79,6 +79,66 @@ namespace StoreAPI.IntegrationTests.UserController
             loginResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         }
 
+        [Theory]
+        [InlineData("EmployeeUser1", "employee1@test.com", "Stefan", "Petreski", (int)RoleEnum.Employee, "Pa$$w0rd!")]
+        [InlineData("ManagerUser1", "manager1@test.com", "Jane", "Smith", (int)RoleEnum.Admin, "Str0ngP@ss!")]
+        [InlineData("SupportUser1", "supportPetar@test.abc.com", "Petar", "Trajcevski", (int)RoleEnum.Employee, "TEst9jg9dh49gfhd9fDdifhirhf")]
+        public async Task AddUser_WithAdminTokenAndDifferentValidData_ShouldReturnOk(
+            string username,
+            string email,
+            string name,
+            string surname,
+            int roleId,
+            string password
+        )
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var adminUser = await _helperService.CreateTestUserAsync(prefix, true);
+            var token = tokenService.GenerateToken(adminUser.Id, ((RoleEnum)adminUser.RoleId).ToString());
+
+            var addRequest = new AddUserRequest
+            {
+                Username = username,
+                Email = prefix + email,
+                Name = name,
+                Surname = surname,
+                RoleId = roleId,
+                Password = password
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/User/AddUser")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+            var addedUser = await context.User.FirstOrDefaultAsync(u => u.Username == addRequest.Username);
+            addedUser.Should().NotBeNull();
+            addedUser.Username.Should().Be(addRequest.Username);
+            addedUser.Email.Should().Be(addRequest.Email);
+            addedUser.Name.Should().Be(addRequest.Name);
+            addedUser.Surname.Should().Be(addRequest.Surname);
+            addedUser.RoleId.Should().Be(addRequest.RoleId);
+
+            var loginRequest = new LoginRequest
+            {
+                Username = addedUser.Username,
+                Password = addRequest.Password
+            };
+
+            // Verify that the user can log in
+            var loginResponse = await _client.PostAsJsonAsync("/User/Login", loginRequest);
+
+            loginResponse.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        }
+
         [Fact]
         public async Task AddUser_WithEmployeeToken_ShouldReturnForbidden()
         {

@@ -64,6 +64,47 @@ namespace StoreAPI.IntegrationTests.CompanyController
             addedCompany.Phone.Should().Be(addRequest.Phone);
         }
 
+        [Theory]
+        [InlineData("Apple", "123 Test Street", "1234567890")]
+        [InlineData("Anhoch", "456 test Ave", "0987654321")]
+        [InlineData("ACER", "789 Some Blvd", "5555555555")]
+        public async Task AddCompany_WithDifferentValidData_ShouldReturnOk(
+            string name,
+            string address,
+            string phone
+        )
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+            var tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
+
+            var testUser = await _helperService.CreateTestUserAsync(prefix);
+            var token = tokenService.GenerateToken(testUser.Id, ((RoleEnum)testUser.RoleId).ToString());
+
+            var addRequest = new AddCompanyRequest
+            {
+                Name = prefix + name,
+                Address = address,
+                Phone = phone
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Company/AddCompany")
+            {
+                Content = JsonContent.Create(addRequest)
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+            var addedCompany = await context.Company.FirstOrDefaultAsync(u => u.Name == addRequest.Name);
+            addedCompany.Should().NotBeNull();
+            addedCompany.Name.Should().Be(addRequest.Name);
+            addedCompany.Address.Should().Be(addRequest.Address);
+            addedCompany.Phone.Should().Be(addRequest.Phone);
+        }
+
         [Fact]
         public async Task AddCompany_WithExistingName_ShouldReturnConflict()
         {
