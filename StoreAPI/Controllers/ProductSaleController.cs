@@ -13,7 +13,7 @@ namespace StoreAPI.Controllers
     public class ProductSaleController : ControllerBase
     {
 
-        private readonly ILogger<ProductSaleController> _logger;//TODO what is this?
+        private readonly ILogger<ProductSaleController> _logger;
         private readonly ProductSaleService _productSaleService;
 
         public ProductSaleController(ILogger<ProductSaleController> logger, ProductSaleService productSaleService)

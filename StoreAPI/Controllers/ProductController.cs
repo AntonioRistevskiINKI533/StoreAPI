@@ -22,7 +22,6 @@ namespace StoreAPI.Controllers
             _productService = productService;
         }
 
-        //TODO should employee be able to delete/update a product?
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> AddProduct(AddProductRequest request)

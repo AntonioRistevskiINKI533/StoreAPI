@@ -55,7 +55,7 @@ namespace StoreAPI.Services
             return;
         }
 
-        public async Task UpdateCompany(UpdateCompanyRequest request)//TODO integrations tests from service to repo that check database constraints maybe???
+        public async Task UpdateCompany(UpdateCompanyRequest request)
         {
             var company = await _companyRepository.GetById(request.Id);
 

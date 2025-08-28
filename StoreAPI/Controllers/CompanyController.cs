@@ -22,7 +22,6 @@ namespace StoreAPI.Controllers
             _companyService = companyService;
         }
 
-        //TODO should employee be able to delete/update a company?
         [HttpPost("[action]")]
         [ProducesResponseType(typeof(ActionResult), 200)]
         public async Task<ActionResult> AddCompany(AddCompanyRequest request)
