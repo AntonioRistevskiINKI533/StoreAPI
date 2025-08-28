@@ -12,6 +12,11 @@ using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using StoreAPI.Models;
+using StoreAPI.Repositories.Interfaces;
 
 namespace StoreAPI.IntegrationTests.ProductSaleController
 {
@@ -269,6 +274,44 @@ namespace StoreAPI.IntegrationTests.ProductSaleController
 
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Sold amount must be greater than 0");
+        }
+
+        [Fact]
+        public async Task AddProductSale_WithMockedReposAndValidData_ShouldReturnOk()
+        {
+            var productRepoMock = new Mock<IProductRepository>();
+            var productSaleRepoMock = new Mock<IProductSaleRepository>();
+
+            var product = new Product
+            {
+                Id = 1,
+                Name = _helperService.CreateRandomText(),
+                CompanyId = 1,
+                Price = _helperService.CreateRandomPrice()
+            };
+
+            productRepoMock.Setup(r => r.GetById(product.Id))
+                           .ReturnsAsync(product);
+
+            var service = new ProductSaleService(productSaleRepoMock.Object, productRepoMock.Object);
+            var controller = new StoreAPI.Controllers.ProductSaleController(Mock.Of<ILogger<StoreAPI.Controllers.ProductSaleController>>(), service);
+
+            var request = new AddProductSaleRequest
+            {
+                ProductId = product.Id,
+                SoldAmount = _helperService.CreateRandomNumber(),
+                PricePerUnit = null, //should fall back to product.Price
+                Date = DateTime.UtcNow
+            };
+
+            var result = await controller.AddProductSale(request);
+
+            result.Should().BeOfType<OkResult>();
+            productSaleRepoMock.Verify(r => r.Add(It.Is<ProductSale>(ps =>
+                ps.ProductId == request.ProductId &&
+                ps.SoldAmount == request.SoldAmount &&
+                ps.PricePerUnit == product.Price //since PricePerUnit was null
+            )), Times.Once);
         }
 
         public void Dispose()

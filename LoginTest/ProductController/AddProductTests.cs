@@ -12,6 +12,11 @@ using StoreAPI.Models.Requests;
 using System.Net.Http.Json;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using StoreAPI.Models;
+using StoreAPI.Repositories.Interfaces;
 
 namespace StoreAPI.IntegrationTests.CompanyController
 {
@@ -273,6 +278,49 @@ namespace StoreAPI.IntegrationTests.CompanyController
             var content = await response.Content.ReadAsStringAsync();
             content.Should().Contain("Price must be greater than 0");
         }
+
+        [Fact]
+        public async Task AddProduct_WithMockedReposAndValidData_ShouldReturnOk()
+        {
+            var productRepoMock = new Mock<IProductRepository>();
+            var productSaleRepoMock = new Mock<IProductSaleRepository>();
+            var companyRepoMock = new Mock<ICompanyRepository>();
+
+            var company = new Company 
+            { 
+                Id = 1, 
+                Name = _helperService.CreateRandomText() 
+            };
+
+            companyRepoMock.Setup(r => r.GetById(company.Id))
+                           .ReturnsAsync(company);
+
+            productRepoMock.Setup(r => r.GetByName(It.IsAny<string>()))
+                           .ReturnsAsync((Product)null);
+
+            productRepoMock.Setup(r => r.GetByRegistrationNumber(It.IsAny<string>()))
+                           .ReturnsAsync((Product)null);
+
+            var service = new ProductService(productRepoMock.Object, productSaleRepoMock.Object, companyRepoMock.Object);
+            var controller = new StoreAPI.Controllers.ProductController(Mock.Of<ILogger<StoreAPI.Controllers.ProductController>>(), service);
+
+            var request = new AddProductRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                CompanyId = company.Id,
+                Price = _helperService.CreateRandomNumber()
+            };
+
+            var result = await controller.AddProduct(request);
+
+            result.Should().BeOfType<OkResult>();
+            productRepoMock.Verify(r => r.Add(It.Is<Product>(p =>
+                p.Name == request.Name &&
+                p.CompanyId == request.CompanyId &&
+                p.Price == request.Price
+            )), Times.Once);
+        }
+
 
         public void Dispose()
         {

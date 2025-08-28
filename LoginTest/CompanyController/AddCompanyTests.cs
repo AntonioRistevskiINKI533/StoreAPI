@@ -364,11 +364,6 @@ namespace StoreAPI.IntegrationTests.CompanyController
             content.Should().Contain("Address must be between 5 and 200 characters"); ;
         }
 
-        public void Dispose()
-        {
-            _helperService.CleanUp(prefix);
-        }
-
         [Fact]
         public async Task AddCompany_WithMockedRepoAndWithValidData_ShouldReturnOk()
         {
@@ -381,10 +376,10 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             var controller = new StoreAPI.Controllers.CompanyController(Mock.Of<ILogger<StoreAPI.Controllers.CompanyController>>(), service);
 
-            var request = new AddCompanyRequest 
-            { 
-                Name = _helperService.CreateRandomText(), 
-                Address = _helperService.CreateRandomText(), 
+            var request = new AddCompanyRequest
+            {
+                Name = _helperService.CreateRandomText(),
+                Address = _helperService.CreateRandomText(),
                 Phone = _helperService.CreateRandomPhoneNumber()
             };
 
@@ -392,6 +387,11 @@ namespace StoreAPI.IntegrationTests.CompanyController
 
             result.Should().BeOfType<OkResult>();
             repoMock.Verify(r => r.Add(It.Is<Company>(c => c.Name == request.Name)), Times.Once);
+        }
+
+        public void Dispose()
+        {
+            _helperService.CleanUp(prefix);
         }
     }
 }
